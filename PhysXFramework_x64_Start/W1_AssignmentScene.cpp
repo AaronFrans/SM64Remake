@@ -74,7 +74,9 @@ void W1_AssignmentScene::Initialize()
 
 		pBlockDynamic->setMass(0.5f);
 
-		PxRigidActorExt::createExclusiveShape(*pBlockDynamic, blockGeomitry, *pMatBlock);
+		m_pCubeWallDynamics.push_back(pBlockDynamic);
+
+		PxRigidActorExt::createExclusiveShape(*m_pCubeWallDynamics.back(), blockGeomitry, *pMatBlock);
 
 
 		m_pCubeWall[curBlock]->AttachRigidActor(pBlockDynamic);
@@ -110,15 +112,15 @@ void W1_AssignmentScene::Initialize()
 		  Reset, InputTriggerState::down, 'R', -1,
 		  XINPUT_GAMEPAD_A
 		});
+
+	m_IsInitialized = true;
 }
 
 void W1_AssignmentScene::Update()
 {
 
 
-	if (m_SceneContext.GetInput()->IsKeyboardKey(InputTriggerState::pressed, 'R'))
-		m_pFloor->Translate(0, 10, 0);
-	const float moveSpeedBase{ 2000 };
+	const float moveSpeedBase{ 5000 };
 	const float moveSpeed{ moveSpeedBase * m_SceneContext.GetGameTime()->GetElapsed() };
 	XMFLOAT3 camForward = m_SceneContext.GetCamera()->GetForward();
 	XMFLOAT3 camRigth = m_SceneContext.GetCamera()->GetRight();
@@ -126,14 +128,14 @@ void W1_AssignmentScene::Update()
 
 
 	if (m_SceneContext.GetInput()->IsActionTriggered(Left))
-		m_pBallDynamic->addForce(PxVec3{ -camRigth.x * moveSpeed, -camRigth.y * moveSpeed, -camRigth.z * moveSpeed });
+		m_pBallDynamic->addTorque(PxVec3{ camForward.x * moveSpeed, camForward.y * moveSpeed, camForward.z * moveSpeed });
 	if (m_SceneContext.GetInput()->IsActionTriggered(Right))
-		m_pBallDynamic->addForce(PxVec3{ camRigth.x * moveSpeed, camRigth.y * moveSpeed, camRigth.z * moveSpeed });
+		m_pBallDynamic->addTorque(PxVec3{ -camForward.x * moveSpeed, -camForward.y * moveSpeed, -camForward.z * moveSpeed });
 
 	if (m_SceneContext.GetInput()->IsActionTriggered(Up))
-		m_pBallDynamic->addForce(PxVec3{ camForward.x * moveSpeed, camForward.y * moveSpeed, camForward.z * moveSpeed });
+		m_pBallDynamic->addTorque(PxVec3{ camRigth.x * moveSpeed, camRigth.y * moveSpeed, camRigth.z * moveSpeed });
 	if (m_SceneContext.GetInput()->IsActionTriggered(Down))
-		m_pBallDynamic->addForce(PxVec3{ -camForward.x * moveSpeed, -camForward.y * moveSpeed, -camForward.z * moveSpeed });
+		m_pBallDynamic->addTorque(PxVec3{ -camRigth.x * moveSpeed, -camRigth.y * moveSpeed, -camRigth.z * moveSpeed });
 
 
 	if (m_SceneContext.GetInput()->IsActionTriggered(Reset))
@@ -170,6 +172,9 @@ void W1_AssignmentScene::SetupWallPos()
 	const float xOffset{ 0.5f };
 	const float yOffset{ 1 };
 
+	if (m_IsInitialized)
+		ResetDynamicBody(m_pBallDynamic);
+
 	for (int curBlock{ 0 }; curBlock < m_NrBlocks; curBlock++)
 	{
 		const int row = curBlock / m_NrBlocksPerRow;
@@ -180,5 +185,14 @@ void W1_AssignmentScene::SetupWallPos()
 		const float YRotation{ static_cast<float>(rand() % 30) };
 
 		m_pCubeWall[row * m_NrBlocksPerRow + col]->RotateDegrees(0, YRotation, 0);
+
+		if (m_IsInitialized)
+			ResetDynamicBody(m_pCubeWallDynamics[row * m_NrBlocksPerRow + col]);
 	}
+}
+
+void W1_AssignmentScene::ResetDynamicBody(PxRigidDynamic* body)
+{
+	body->putToSleep();
+	body->wakeUp();
 }

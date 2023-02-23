@@ -23,6 +23,7 @@ protected:
 private:
 
 	std::vector<GameObject*> m_pCubeWall{};
+	std::vector<PxRigidDynamic*> m_pCubeWallDynamics{};
 
 	GameObject* m_pFloor{ nullptr };
 
@@ -39,5 +40,8 @@ private:
 
 	void SetBallPos();
 	void SetupWallPos();
+
+	void ResetDynamicBody(PxRigidDynamic* body);
+
 };
 
