@@ -12,7 +12,8 @@ enum InputIds
 	Up,
 	Down,
 	Left,
-	Right
+	Right,
+	Reset
 };
 
 
@@ -20,7 +21,9 @@ void W1_AssignmentScene::Initialize()
 {
 	EnablePhysxDebugRendering(true);
 	const auto pPhysX = PhysxManager::GetInstance()->GetPhysics();
-	const PxMaterial* pPhysXMat = pPhysX->createMaterial(0.7f, 0.7f, 0.2f);
+	const PxMaterial* pMatFloor = pPhysX->createMaterial(0.7f, 0.7f, 0.2f);
+	const PxMaterial* pMatBall = pPhysX->createMaterial(0.7f, 0.7f, 0.2f);
+	const PxMaterial* pMatBlock = pPhysX->createMaterial(0.7f, 0.7f, 0.2f);
 
 
 	const XMFLOAT3 cubeDims{ 70, 0.1f, 70 };
@@ -28,32 +31,56 @@ void W1_AssignmentScene::Initialize()
 	//floor
 	m_pFloor = new CubePosColorNorm{ cubeDims.x, cubeDims.y, cubeDims.z };
 	AddGameObject(m_pFloor);
+	m_pFloor->Translate(0, -cubeDims.y * 2, 0);
 
 	//floor Actor
 	PxRigidStatic* pCubeActor = pPhysX->createRigidStatic(PxTransform{ PxIdentity });
 	PxBoxGeometry boxGeomitry = PxBoxGeometry{ cubeDims.x / 2, cubeDims.y / 2, cubeDims.z / 2 };
 
-	PxRigidActorExt::createExclusiveShape(*pCubeActor, boxGeomitry, *pPhysXMat);
+	PxRigidActorExt::createExclusiveShape(*pCubeActor, boxGeomitry, *pMatFloor);
 
 	//Link floor with actor
 	m_pFloor->AttachRigidActor(pCubeActor);
 
 
 
-	const float ballRadius{ 1 };
+
 	//Ball
-	m_pBall = new SpherePosColorNorm{ ballRadius, 30, 30, XMFLOAT4{Colors::Azure} };
+	m_pBall = new SpherePosColorNorm{ m_BallRadius, 30, 30, XMFLOAT4{Colors::Azure} };
 	AddGameObject(m_pBall);
-	m_pBall->Translate(0, 10, 0);
+	SetBallPos();
 
 	//Ball Actor
-	m_pBallRigid = pPhysX->createRigidDynamic(PxTransform{ PxIdentity });
-	PxSphereGeometry ballGeomitry = PxSphereGeometry{ ballRadius };
+	m_pBallDynamic = pPhysX->createRigidDynamic(PxTransform{ PxIdentity });
+	m_pBallDynamic->setMass(10);
+	PxSphereGeometry ballGeomitry = PxSphereGeometry{ m_BallRadius };
 
-	PxRigidActorExt::createExclusiveShape(*m_pBallRigid, ballGeomitry, *pPhysXMat);
+	PxRigidActorExt::createExclusiveShape(*m_pBallDynamic, ballGeomitry, *pMatBall);
 
 	//Link floor with actor
-	m_pBall->AttachRigidActor(m_pBallRigid);
+	m_pBall->AttachRigidActor(m_pBallDynamic);
+
+	//Wall
+	PxRigidDynamic* pBlockDynamic{ nullptr };
+	PxBoxGeometry blockGeomitry = PxBoxGeometry{ m_BlockDims.x / 2.f, m_BlockDims.x / 2.f, m_BlockDims.z / 2.f };
+	for (int curBlock{ 0 }; curBlock < m_NrBlocks; curBlock++)
+	{
+		//Block
+		m_pCubeWall.push_back(new CubePosColorNorm{ m_BlockDims.x, m_BlockDims.y, m_BlockDims.z });
+		AddGameObject(m_pCubeWall[curBlock]);
+
+		//Block Actor
+		pBlockDynamic = pPhysX->createRigidDynamic(PxTransform{ PxIdentity });
+
+		pBlockDynamic->setMass(0.5f);
+
+		PxRigidActorExt::createExclusiveShape(*pBlockDynamic, blockGeomitry, *pMatBlock);
+
+
+		m_pCubeWall[curBlock]->AttachRigidActor(pBlockDynamic);
+	}
+
+	SetupWallPos();
 
 
 
@@ -78,7 +105,11 @@ void W1_AssignmentScene::Initialize()
 		  Right, InputTriggerState::down, VK_RIGHT, -1,
 		  XINPUT_GAMEPAD_DPAD_RIGHT
 		});
-
+	m_SceneContext.GetInput()->AddInputAction(InputAction
+		{
+		  Reset, InputTriggerState::down, 'R', -1,
+		  XINPUT_GAMEPAD_A
+		});
 }
 
 void W1_AssignmentScene::Update()
@@ -87,21 +118,29 @@ void W1_AssignmentScene::Update()
 
 	if (m_SceneContext.GetInput()->IsKeyboardKey(InputTriggerState::pressed, 'R'))
 		m_pFloor->Translate(0, 10, 0);
+	const float moveSpeedBase{ 2000 };
+	const float moveSpeed{ moveSpeedBase * m_SceneContext.GetGameTime()->GetElapsed() };
+	XMFLOAT3 camForward = m_SceneContext.GetCamera()->GetForward();
+	XMFLOAT3 camRigth = m_SceneContext.GetCamera()->GetRight();
 
-	const float moveSpeed{ 500 * m_SceneContext.GetGameTime()->GetElapsed() };
+
 
 	if (m_SceneContext.GetInput()->IsActionTriggered(Left))
-		m_pBallRigid->addTorque({ -moveSpeed, 0, 0 });
+		m_pBallDynamic->addForce(PxVec3{ -camRigth.x * moveSpeed, -camRigth.y * moveSpeed, -camRigth.z * moveSpeed });
 	if (m_SceneContext.GetInput()->IsActionTriggered(Right))
-		m_pBallRigid->addTorque({ moveSpeed, 0, 0 });
+		m_pBallDynamic->addForce(PxVec3{ camRigth.x * moveSpeed, camRigth.y * moveSpeed, camRigth.z * moveSpeed });
 
 	if (m_SceneContext.GetInput()->IsActionTriggered(Up))
-		m_pBallRigid->addTorque({ 0, 0 , moveSpeed });
+		m_pBallDynamic->addForce(PxVec3{ camForward.x * moveSpeed, camForward.y * moveSpeed, camForward.z * moveSpeed });
 	if (m_SceneContext.GetInput()->IsActionTriggered(Down))
-		m_pBallRigid->addTorque({ 0, 0 ,-moveSpeed, });
+		m_pBallDynamic->addForce(PxVec3{ -camForward.x * moveSpeed, -camForward.y * moveSpeed, -camForward.z * moveSpeed });
 
 
-
+	if (m_SceneContext.GetInput()->IsActionTriggered(Reset))
+	{
+		SetBallPos();
+		SetupWallPos();
+	}
 }
 
 void W1_AssignmentScene::Draw() const
@@ -116,4 +155,30 @@ void W1_AssignmentScene::OnSceneActivated()
 
 void W1_AssignmentScene::OnSceneDeactivated()
 {
+}
+
+void W1_AssignmentScene::SetBallPos()
+{
+	const float ballZPos{ -20 };
+	const float ballYPos{ m_BallRadius * 2 + 0.5f };
+
+	m_pBall->Translate(0, ballYPos, ballZPos);
+}
+
+void W1_AssignmentScene::SetupWallPos()
+{
+	const float xOffset{ 0.5f };
+	const float yOffset{ 1 };
+
+	for (int curBlock{ 0 }; curBlock < m_NrBlocks; curBlock++)
+	{
+		const int row = curBlock / m_NrBlocksPerRow;
+		const int col = curBlock % m_NrBlocksPerRow;
+
+		m_pCubeWall[row * m_NrBlocksPerRow + col]->Translate(row * (m_BlockDims.x + xOffset), (col * (m_BlockDims.y + yOffset)), m_BlockDims.y * 2);
+
+		const float YRotation{ static_cast<float>(rand() % 30) };
+
+		m_pCubeWall[row * m_NrBlocksPerRow + col]->RotateDegrees(0, YRotation, 0);
+	}
 }

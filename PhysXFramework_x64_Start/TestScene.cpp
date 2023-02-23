@@ -12,7 +12,8 @@ enum InputIds
 	Up,
 	Down,
 	Left,
-	Right
+	Right,
+	Reset
 };
 
 void TestScene::Initialize()

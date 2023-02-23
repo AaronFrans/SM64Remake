@@ -1,5 +1,8 @@
 #pragma once
 #include "GameScene.h"
+
+
+
 class W1_AssignmentScene final : public GameScene
 {
 public:
@@ -19,11 +22,22 @@ protected:
 
 private:
 
+	std::vector<GameObject*> m_pCubeWall{};
+
 	GameObject* m_pFloor{ nullptr };
 
 	GameObject* m_pBall{ nullptr };
-	PxRigidDynamic* m_pBallRigid{ nullptr };
+	PxRigidDynamic* m_pBallDynamic{ nullptr };
 
+	const int m_NrBlocksPerRow{ 5 };
+	const int m_NrBlocks{ m_NrBlocksPerRow * m_NrBlocksPerRow };
 
+	const float m_BallRadius{ 2 };
+
+	const float m_BlockDimension{ 2 };
+	const XMFLOAT3 m_BlockDims{ m_BlockDimension, m_BlockDimension, m_BlockDimension };
+
+	void SetBallPos();
+	void SetupWallPos();
 };
 
