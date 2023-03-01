@@ -6,7 +6,7 @@
 class W1_AssignmentScene final : public GameScene
 {
 public:
-	W1_AssignmentScene() :GameScene(L"TestScene") {}
+	W1_AssignmentScene() :GameScene(L"W1_AssignmentScene") {}
 	~W1_AssignmentScene() override = default;
 	W1_AssignmentScene(const W1_AssignmentScene& other) = delete;
 	W1_AssignmentScene(W1_AssignmentScene&& other) noexcept = delete;
@@ -23,6 +23,7 @@ protected:
 private:
 
 	std::vector<GameObject*> m_pCubeWall{};
+	std::vector<PxRigidDynamic*> m_pCubeWallDynamics{};
 
 	GameObject* m_pFloor{ nullptr };
 

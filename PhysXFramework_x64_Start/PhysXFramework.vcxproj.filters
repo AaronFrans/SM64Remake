@@ -181,6 +181,15 @@
     <ClInclude Include="W1_AssignmentScene.h">
       <Filter>GameFiles\Scenes\W01_PhysX</Filter>
     </ClInclude>
+    <ClInclude Include="TutorialSceneWeek2.h">
+      <Filter>GameFiles\Scenes\W02_PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="TriggerScene.h">
+      <Filter>GameFiles\Scenes\W02_PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioTestScene.h">
+      <Filter>GameFiles\Scenes\W02_PhysX</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -297,5 +306,19 @@
     <ClCompile Include="W1_AssignmentScene.cpp">
       <Filter>GameFiles\Scenes\W01_PhysX</Filter>
     </ClCompile>
+    <ClCompile Include="TutorialSceneWeek2.cpp">
+      <Filter>GameFiles\Scenes\W02_PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="TriggerScene.cpp">
+      <Filter>GameFiles\Scenes\W02_PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioTestScene.cpp">
+      <Filter>GameFiles\Scenes\W02_PhysX</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PhysXFramework.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

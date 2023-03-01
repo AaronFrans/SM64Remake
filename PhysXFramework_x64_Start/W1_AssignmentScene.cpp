@@ -74,6 +74,7 @@ void W1_AssignmentScene::Initialize()
 
 		pBlockDynamic->setMass(0.5f);
 
+		m_pCubeWallDynamics.push_back(pBlockDynamic);
 		PxRigidActorExt::createExclusiveShape(*pBlockDynamic, blockGeomitry, *pMatBlock);
 
 
@@ -114,10 +115,6 @@ void W1_AssignmentScene::Initialize()
 
 void W1_AssignmentScene::Update()
 {
-
-
-	if (m_SceneContext.GetInput()->IsKeyboardKey(InputTriggerState::pressed, 'R'))
-		m_pFloor->Translate(0, 10, 0);
 	const float moveSpeedBase{ 2000 };
 	const float moveSpeed{ moveSpeedBase * m_SceneContext.GetGameTime()->GetElapsed() };
 	XMFLOAT3 camForward = m_SceneContext.GetCamera()->GetForward();
@@ -163,6 +160,11 @@ void W1_AssignmentScene::SetBallPos()
 	const float ballYPos{ m_BallRadius * 2 + 0.5f };
 
 	m_pBall->Translate(0, ballYPos, ballZPos);
+	if (m_IsInitialized)
+	{
+		m_pBallDynamic->putToSleep();
+		m_pBallDynamic->wakeUp();
+	}
 }
 
 void W1_AssignmentScene::SetupWallPos()
@@ -180,5 +182,10 @@ void W1_AssignmentScene::SetupWallPos()
 		const float YRotation{ static_cast<float>(rand() % 30) };
 
 		m_pCubeWall[row * m_NrBlocksPerRow + col]->RotateDegrees(0, YRotation, 0);
+		if (m_IsInitialized)
+		{
+			m_pCubeWallDynamics[row * m_NrBlocksPerRow + col]->putToSleep();
+			m_pCubeWallDynamics[row * m_NrBlocksPerRow + col]->wakeUp();
+		}
 	}
 }
