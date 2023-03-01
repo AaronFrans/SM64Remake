@@ -56,9 +56,6 @@ void TriggerScene::Initialize()
 
 	m_pPhysxScene->addActor(*m_pTriggerRight);
 
-
-
-
 }
 
 void TriggerScene::Update()

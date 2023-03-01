@@ -19,6 +19,7 @@
 #include "TutorialSceneWeek2.h"
 #include "TriggerScene.h"
 #include "AudioTestScene.h"
+#include "W2_AssignmentScene.h"
 #endif
 
 namespace dae
@@ -31,7 +32,7 @@ namespace dae
 #endif
 
 #ifdef W02
-		pSceneManager->AddGameScene(new AudioTestScene());
+		pSceneManager->AddGameScene(new W2_AssignmentScene());
 #endif
 
 	}

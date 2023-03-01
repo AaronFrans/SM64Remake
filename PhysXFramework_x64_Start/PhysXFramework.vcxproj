@@ -127,6 +127,7 @@
     <ClInclude Include="TutorialSceneWeek2.h" />
     <ClInclude Include="VertexStructs.h" />
     <ClInclude Include="W1_AssignmentScene.h" />
+    <ClInclude Include="W2_AssignmentScene.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AudioTestScene.cpp" />
@@ -173,6 +174,7 @@
     <ClCompile Include="TriggerScene.cpp" />
     <ClCompile Include="TutorialSceneWeek2.cpp" />
     <ClCompile Include="W1_AssignmentScene.cpp" />
+    <ClCompile Include="W2_AssignmentScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PhysXFramework.rc" />
