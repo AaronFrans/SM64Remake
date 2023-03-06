@@ -23,6 +23,7 @@ private:
 	GameObject* m_pLevel{ nullptr };
 	GameObject* m_pSphere{ nullptr };
 
+
 	GameObject* m_pHatchLeft{ nullptr };
 	GameObject* m_pHatchRight{ nullptr };
 
@@ -30,6 +31,7 @@ private:
 	PxRigidStatic* m_pTriggerLeft{ nullptr };
 	PxRigidStatic* m_pTriggerRight{ nullptr };
 
+	FMOD::Sound* m_pSound2D{ nullptr };
 
 	FMOD::Channel* m_pChannel2D{ nullptr };
 

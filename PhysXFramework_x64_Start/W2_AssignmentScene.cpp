@@ -137,6 +137,7 @@ void W2_AssignmentScene::Initialize()
 	m_pHatchRight->Translate(m_RightKinematicPostion.x, m_RightKinematicPostion.y, m_RightKinematicPostion.z);
 
 
+
 	//Ball
 	m_pSphere = new SpherePosColorNorm(1.f, 10, 10, XMFLOAT4{ Colors::Gray });
 	AddGameObject(m_pSphere);
@@ -187,12 +188,11 @@ void W2_AssignmentScene::Initialize()
 	//Sound Effect
 	const auto pFmod = SoundManager::GetInstance()->GetSystem();
 
-	FMOD::Sound* pSound2D{ nullptr };
-	auto result = pFmod->createStream("Resources/Sounds/bell.mp3", FMOD_2D | FMOD_LOOP_OFF, nullptr, &pSound2D);
+	
+	auto result = pFmod->createStream("Resources/Sounds/bell.mp3", FMOD_2D | FMOD_LOOP_OFF, nullptr, &m_pSound2D);
 	SoundManager::GetInstance()->ErrorCheck(result);
 
-	result = pFmod->playSound(pSound2D, nullptr, true, &m_pChannel2D);
-	SoundManager::GetInstance()->ErrorCheck(result);
+	
 
 
 }
@@ -219,13 +219,23 @@ void W2_AssignmentScene::Update()
 
 	if (m_LeftTriggered)
 	{
+
+		const auto pFmod = SoundManager::GetInstance()->GetSystem();
+
+		auto result = pFmod->playSound(m_pSound2D, nullptr, false, &m_pChannel2D);
+		SoundManager::GetInstance()->ErrorCheck(result);
+
 		m_pChannel2D->setPaused(false);
 		m_LeftTriggered = false;
 		m_LeftRotating = true;
 	}
 	if (m_RightTriggered)
 	{
-		m_pChannel2D->setPaused(false);
+		const auto pFmod = SoundManager::GetInstance()->GetSystem();
+
+		auto result = pFmod->playSound(m_pSound2D, nullptr, false, &m_pChannel2D);
+		SoundManager::GetInstance()->ErrorCheck(result);
+
 		m_RightTriggered = false;
 		m_RightRotating = true;
 	}
