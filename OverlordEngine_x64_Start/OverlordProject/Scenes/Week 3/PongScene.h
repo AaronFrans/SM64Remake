@@ -22,5 +22,7 @@ private:
 	CubePrefab* m_pLeftPadle{ nullptr };
 	CubePrefab* m_pRightPadle{ nullptr };
 
+	FixedCamera* m_pCamera{ nullptr };
+
 	SpherePrefab* m_pPongBall{ nullptr };
 };

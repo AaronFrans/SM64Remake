@@ -4,6 +4,7 @@
 #include "Prefabs/CubePrefab.h"
 #include "Prefabs/SpherePrefab.h"
 #include "Prefabs/TorusPrefab.h"
+#include "Prefabs/FixedCamera.h"
 
 
 PongScene::PongScene() :
@@ -13,8 +14,18 @@ void PongScene::Initialize()
 {
 	//auto& physX = PxGetPhysics();
 	//auto pBouncyMat = physX.createMaterial(.5f, .5f, 1);
-	m_SceneContext.pCamera->GetTransform()->Translate(0, 20, -50);
-	//m_SceneContext.pCamera->GetTransform()->Rotate(0, 90, 0); // -> does not work?
+
+	m_pCamera = new FixedCamera();
+
+
+	m_pCamera->GetTransform()->Translate(0, 20, -50);
+	m_pCamera->GetTransform()->Rotate(0, 0, 0); // -> does not work?
+	AddChild(m_pCamera)->GetComponent<CameraComponent>()->SetActive();
+
+	
+
+	//m_SceneContext.pCamera->SetActive(m_pCamera);
+	
 
 
 	//Padles
@@ -25,7 +36,7 @@ void PongScene::Initialize()
 	AddChild(m_pLeftPadle);
 
 
-	auto pRigidBody = m_pLeftPadle->AddComponent(new RigidBodyComponent());
+	//auto pRigidBody = m_pLeftPadle->AddComponent(new RigidBodyComponent());
 
 
 	m_pRightPadle = new CubePrefab(paddleDimensions, XMFLOAT4{ Colors::Gray });
