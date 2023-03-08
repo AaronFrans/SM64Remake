@@ -15,6 +15,7 @@ public:
 
 protected:
 	void Initialize() override;
+	void PostInitialize() override;
 
 	void Update() override;
 
