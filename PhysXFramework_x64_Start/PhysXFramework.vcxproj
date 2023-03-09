@@ -79,6 +79,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AudioTestScene.h" />
     <ClInclude Include="BaseCamera.h" />
     <ClInclude Include="BinaryReader.h" />
     <ClInclude Include="ContentLoader.h" />
@@ -122,10 +123,14 @@
     <ClInclude Include="TestScene.h" />
     <ClInclude Include="TorusPosColorNorm.h" />
     <ClInclude Include="TrackingCamera.h" />
+    <ClInclude Include="TriggerScene.h" />
+    <ClInclude Include="TutorialSceneWeek2.h" />
     <ClInclude Include="VertexStructs.h" />
     <ClInclude Include="W1_AssignmentScene.h" />
+    <ClInclude Include="W2_AssignmentScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AudioTestScene.cpp" />
     <ClCompile Include="BaseCamera.cpp" />
     <ClCompile Include="BinaryReader.cpp" />
     <ClCompile Include="ContentManager.cpp" />
@@ -166,7 +171,13 @@
     <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="TorusPosColorNorm.cpp" />
     <ClCompile Include="TrackingCamera.cpp" />
+    <ClCompile Include="TriggerScene.cpp" />
+    <ClCompile Include="TutorialSceneWeek2.cpp" />
     <ClCompile Include="W1_AssignmentScene.cpp" />
+    <ClCompile Include="W2_AssignmentScene.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PhysXFramework.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
