@@ -19,7 +19,7 @@ void PongScene::Initialize()
 
 
 	auto& physX = PxGetPhysics();
-	auto pBouncyMat = physX.createMaterial(.5f, .5f, 1.1f);
+	auto pBouncyMat = physX.createMaterial(0, 0, 1);
 
 	m_pCamera = new FixedCamera();
 
