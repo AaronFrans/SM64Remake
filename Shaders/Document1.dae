@@ -9,7 +9,7 @@
 		</contributor>
 		<created>2023-03-09T12:23:10Z</created>
 		<keywords>FXComposer, NVIDIA</keywords>
-		<modified>2023-03-09T15:07:35Z</modified>
+		<modified>2023-03-18T13:59:12Z</modified>
 		<subject/>
 		<title/>
 		<unit/>
@@ -22,22 +22,17 @@
 				<instance_geometry url="#Teapot" sid="GeometryInstance" name="Teapot">
 					<bind_material>
 						<technique_common>
-							<instance_material symbol="TeapotMaterial" target="#GP2_W3X-2_UberShader"/>
+							<instance_material symbol="TeapotMaterial" target="#SpikyShader"/>
 						</technique_common>
 					</bind_material>
 				</instance_geometry>
-			</node>
-			<node id="Node2" name="Node2" layer="">
-				<matrix sid="">0.447475 0 0.894296 1.39158 0 1 0 1.01342 -0.894296 0 0.447475 -2.06546 0 0 0 1</matrix>
-				<matrix sid="FXComposer2DiffMatrix">1 -8.9407e-008 2.08616e-007 0 -2.39855e-007 0.552433 0.833557 0 -8.9407e-008 -0.833558 0.552433 -2.98023e-008 0 0 0 1</matrix>
-				<instance_light url="#DirectionalLight" sid="Light1" name="Light"/>
 			</node>
 			<node id="Node1" name="Node1" layer="">
 				<matrix sid="">1 0 0 0 0 1 0 1.09675 0 0 1 3.18753 0 0 0 1</matrix>
 				<instance_geometry url="#Sphere" sid="GeometryInstance1" name="Sphere">
 					<bind_material>
 						<technique_common>
-							<instance_material symbol="SphereMaterial" target="#GP2_W3X-2_UberShader"/>
+							<instance_material symbol="SphereMaterial" target="#SpikyShader"/>
 						</technique_common>
 					</bind_material>
 				</instance_geometry>
@@ -47,7 +42,7 @@
 				<instance_geometry url="#Plane" sid="GeometryInstance2" name="Plane">
 					<bind_material>
 						<technique_common>
-							<instance_material symbol="PlaneMaterial" target="#GP2_W3X-2_UberShader"/>
+							<instance_material symbol="PlaneMaterial" target="#SpikyShader"/>
 						</technique_common>
 					</bind_material>
 				</instance_geometry>
@@ -87,6 +82,12 @@
 		</image>
 		<image id="Oppacity" name="Oppacity">
 			<init_from>oppacity.dds</init_from>
+		</image>
+		<image id="default_bump_normal" name="default_bump_normal">
+			<init_from>file:///c:/program%20files%20(x86)/nvidia%20corporation/fx%20composer%202.5/media/textures/default_bump_normal.dds</init_from>
+		</image>
+		<image id="default_reflection" name="default_reflection">
+			<init_from>file:///c:/program%20files%20(x86)/nvidia%20corporation/fx%20composer%202.5/media/textures/default_reflection.dds</init_from>
 		</image>
 	</library_images>
 	<library_effects>
@@ -176,127 +177,32 @@
 				</technique>
 			</profile_COMMON>
 		</effect>
+		<effect id="Effect2" name="Gooch_bump_reflect">
+			<profile_COMMON>
+				<technique sid="__fxc_remove_profile_COMMON">
+					<constant/>
+				</technique>
+			</profile_COMMON>
+			<extra type="import">
+				<technique profile="NVIDIA_FXCOMPOSER">
+					<import url="Gooch_bump_reflect.fx" compiler_options="" profile="fx"/>
+				</technique>
+			</extra>
+		</effect>
+		<effect id="Effect3" name="SpikyShader">
+			<profile_COMMON>
+				<technique sid="__fxc_remove_profile_COMMON">
+					<constant/>
+				</technique>
+			</profile_COMMON>
+			<extra type="import">
+				<technique profile="NVIDIA_FXCOMPOSER">
+					<import url="SpikyShader.fx" compiler_options="" profile="fx"/>
+				</technique>
+			</extra>
+		</effect>
 	</library_effects>
 	<library_materials>
-		<material id="GP2_W3X-2_UberShader" name="GP2_W3X-2_UberShader_Material">
-			<instance_effect url="#Effect">
-				<technique_hint platform="PC-D3D" ref="WithAlphaBlending"/>
-				<technique_hint platform="PC-D3D10" ref="WithAlphaBlending"/>
-				<setparam ref="gMatrixWVP">
-					<float4x4>1.82369 0.798808 -0.529396 11.6937 -0.749592 2.05484 0.518338 1.14245 -0.270932 0.0989387 -0.784029 6.54685 -0.265341 0.0968968 -0.767848 6.723</float4x4>
-				</setparam>
-				<setparam ref="gMatrixViewInverse">
-					<float4x4>-0.0198812 -0.716731 0.697066 6.46831 2.65252e-006 0.697204 0.716873 5.54303 -0.999802 0.014254 -0.0138589 2.47854 0 -0 -0 1</float4x4>
-				</setparam>
-				<setparam ref="gMatrixWorld">
-					<float4x4>0.847648 0.113484 -0.628927 0 -2.21463e-007 1.0447 0.188507 0 0.639084 -0.150519 0.834177 -5.08581 0 0 0 1</float4x4>
-				</setparam>
-				<setparam ref="gLightDirection">
-					<float3>-0.494039 -0.833557 -0.2472</float3>
-				</setparam>
-				<setparam ref="gUseTextureDiffuse">
-					<bool>true</bool>
-				</setparam>
-				<setparam ref="gColorDiffuse">
-					<float4>1 1 1 1</float4>
-				</setparam>
-				<setparam ref="gColorSpecular">
-					<float4>1 0.838642 0.508203 1</float4>
-				</setparam>
-				<setparam ref="gUseTextureSpecularIntensity">
-					<bool>true</bool>
-				</setparam>
-				<setparam ref="gShininess">
-					<int>13</int>
-				</setparam>
-				<setparam ref="gColorAmbient">
-					<float4>0.579392 1 0.730684 1</float4>
-				</setparam>
-				<setparam ref="gAmbientIntensity">
-					<float>0</float>
-				</setparam>
-				<setparam ref="gFlipGreenChannel">
-					<bool>true</bool>
-				</setparam>
-				<setparam ref="gUseTextureNormal">
-					<bool>true</bool>
-				</setparam>
-				<setparam ref="gUseEnvironmentMapping">
-					<bool>true</bool>
-				</setparam>
-				<setparam ref="gReflectionStrength">
-					<float>0.5</float>
-				</setparam>
-				<setparam ref="gRefractionStrength">
-					<float>0.5</float>
-				</setparam>
-				<setparam ref="gRefractionIndex">
-					<float>0.3</float>
-				</setparam>
-				<setparam ref="gUseFresnelFalloff">
-					<bool>true</bool>
-				</setparam>
-				<setparam ref="gColorFresnel">
-					<float4>1 1 1 1</float4>
-				</setparam>
-				<setparam ref="gFresnelPower">
-					<float>9</float>
-				</setparam>
-				<setparam ref="gFresnelMultiplier">
-					<float>100</float>
-				</setparam>
-				<setparam ref="gFresnelHardness">
-					<float>19.1</float>
-				</setparam>
-				<setparam ref="gOpacityIntensity">
-					<float>1</float>
-				</setparam>
-				<setparam ref="gTextureOpacityIntensity">
-					<bool>true</bool>
-				</setparam>
-				<setparam ref="gUseSpecularBlinn">
-					<bool>true</bool>
-				</setparam>
-				<setparam ref="gUseSpecularPhong">
-					<bool>true</bool>
-				</setparam>
-				<setparam ref="gTextureDiffuse">
-					<surface type="2D">
-						<init_from>Diffuse</init_from>
-						<format>R8G8B8A8</format>
-						<size>512 512 1</size>
-					</surface>
-				</setparam>
-				<setparam ref="gTextureSpecularIntensity">
-					<surface type="2D">
-						<init_from>Specular</init_from>
-						<format>R8G8B8A8</format>
-						<size>512 512 1</size>
-					</surface>
-				</setparam>
-				<setparam ref="gTextureNormal">
-					<surface type="2D">
-						<init_from>CobbleStone_NormalMap</init_from>
-						<format>R8G8B8A8</format>
-						<size>512 512 1</size>
-					</surface>
-				</setparam>
-				<setparam ref="gCubeEnvironment">
-					<surface type="CUBE">
-						<init_from>Cubemap</init_from>
-						<format>R8G8B8A8</format>
-						<size>512 512 1</size>
-					</surface>
-				</setparam>
-				<setparam ref="gTextureOpacity">
-					<surface type="2D">
-						<init_from>Oppacity</init_from>
-						<format>R8G8B8A8</format>
-						<size>512 512 1</size>
-					</surface>
-				</setparam>
-			</instance_effect>
-		</material>
 		<material id="DefaultMaterial" name="DefaultMaterial">
 			<instance_effect url="#Effect1">
 				<technique_hint platform="PC-D3D" ref="CommonProfile"/>
@@ -330,6 +236,27 @@
 				</setparam>
 				<setparam ref="Index_Of_Refraction">
 					<float>1</float>
+				</setparam>
+			</instance_effect>
+		</material>
+		<material id="SpikyShader" name="SpikyShader_Material">
+			<instance_effect url="#Effect3">
+				<technique_hint platform="PC-D3D10" ref="Default"/>
+				<technique_hint platform="PC-D3D" ref="technique0"/>
+				<setparam ref="m_MatrixWorldViewProj">
+					<float4x4>2.74748 0 0 0 0 2.74748 0 0 0 0 -1.00006 4.7446 0 0 -1 4.74525</float4x4>
+				</setparam>
+				<setparam ref="m_MatrixWorld">
+					<float4x4>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</float4x4>
+				</setparam>
+				<setparam ref="m_LightDirection">
+					<float3>0.996546 -0 0.0830455</float3>
+				</setparam>
+				<setparam ref="gColorDiffuse">
+					<float3>1 1 1</float3>
+				</setparam>
+				<setparam ref="gSpikeLength">
+					<float>0</float>
 				</setparam>
 			</instance_effect>
 		</material>

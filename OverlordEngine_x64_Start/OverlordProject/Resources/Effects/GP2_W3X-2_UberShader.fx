@@ -32,7 +32,7 @@ float4x4 gMatrixWVP : WORLDVIEWPROJECTION;
 // The ViewInverse Matrix - the third row contains the camera position!
 float4x4 gMatrixViewInverse : VIEWINVERSE;
 // The World Matrix
-float4x4 gMatrixWorld : WORD;
+float4x4 gMatrixWorld : WORLD;
 
 //STATES
 //******
@@ -78,14 +78,12 @@ float4 gColorDiffuse
 <
 	string UIName = "Diffuse Color";
 	string UIWidget = "Color";
-> = float4(1,1,1,1);
+> = float4(1, 1, 1, 1);
 
 Texture2D gTextureDiffuse
 <
 	string UIName = "Diffuse Texture";
 	string UIWidget = "Texture";
-    string ResourceName = "Diffuse.dds";
-    string ResourceType = "2D";
 >;
 
 //SPECULAR
@@ -100,8 +98,6 @@ Texture2D gTextureSpecularIntensity
 <
 	string UIName = "Specular Level Texture";
 	string UIWidget = "Texture";
-    string ResourceName = "Specular.dds";
-    string ResourceType = "2D";
 >;
 
 bool gUseTextureSpecularIntensity
@@ -153,14 +149,13 @@ Texture2D gTextureNormal
 <
 	string UIName = "Normal Texture";
 	string UIWidget = "Texture";
->;
+> ;
 
 //ENVIRONMENT MAPPING
 //*******************
 TextureCube gCubeEnvironment
 <
 	string UIName = "Environment Cube";
-    string ResourceName = "Cubemap.dds";
 	string ResourceType = "Cube";
 >;
 
@@ -255,8 +250,6 @@ Texture2D gTextureOpacity
 <
 	string UIName = "Opacity Map";
 	string UIWidget = "Texture";
-    string ResourceName = "Oppacity.dds";
-    string ResourceType = "2D";
 >;
 
 
@@ -369,16 +362,12 @@ float3 CalculateNormal(float3 tangent, float3 normal, float2 texCoord)
 
 float3 CalculateDiffuse(float3 normal, float2 texCoord)
 {
-	float3 diffColor;
-	
+	float diffuseStrength = saturate(dot(gLightDirection, normal));
+
+	float3 diffColor = gColorDiffuse * diffuseStrength;
+
 	if(gUseTextureDiffuse)
-	 	diffColor = gTextureDiffuse.Sample(gTextureSampler, texCoord).rgb * gColorDiffuse;
-	else
-		diffColor = gColorDiffuse;
-	
-	float diffuseStrength = dot(gLightDirection, -normal);
-	diffuseStrength = saturate(diffuseStrength);
-	diffColor *= diffuseStrength;
+	 	diffColor *= gTextureDiffuse.Sample(gTextureSampler, texCoord).rgb;
 	
 	return diffColor;
 }
@@ -391,19 +380,20 @@ float3 CalculateFresnelFalloff(float3 normal, float3 viewDirection, float3 envir
 	//gFresnelMultiplier
 	//gUseTextureEnvironment
 	//gColorFresnel
-	float3 fresnelFalloff;
+	float3 fresnelFalloff = gUseEnvironmentMapping * environmentColor;
 	
 	if(gUseFresnelFalloff)
 	{
 		float fresnel = (pow(1- saturate(abs(dot(normal, viewDirection))), gFresnelPower)) * gFresnelMultiplier;
 		float fresnelMask = pow(1 - saturate(dot(float3(0, -1, 0), normal)), gFresnelHardness);
-		
-		if(gUseEnvironmentMapping)
+		if (gUseEnvironmentMapping)
 			fresnelFalloff = fresnel * fresnelMask * environmentColor;
 		else
-			fresnelFalloff = fresnel * fresnelMask * float3(1,1,1);
+			fresnelFalloff = fresnel * fresnelMask * gColorFresnel;
 	}
+	
 	return fresnelFalloff;
+	
 }
 
 float3 CalculateEnvironment(float3 viewDirection, float3 normal)

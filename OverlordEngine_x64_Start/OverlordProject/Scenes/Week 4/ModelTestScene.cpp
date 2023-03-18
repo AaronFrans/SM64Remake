@@ -46,12 +46,3 @@ void ModelTestScene::Initialize()
 
 	GameSceneExt::CreatePhysXGroundPlane(*this, pMat);
 }
-
-void ModelTestScene::PostInitialize()
-{
-
-}
-
-void ModelTestScene::Update()
-{
-}

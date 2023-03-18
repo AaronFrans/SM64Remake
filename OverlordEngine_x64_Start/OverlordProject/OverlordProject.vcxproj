@@ -94,6 +94,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Materials\DiffuseMaterial.cpp" />
+    <ClCompile Include="Materials\SpikyMaterial.cpp" />
     <ClCompile Include="Scenes\Week 4\ModelTestScene.cpp" />
     <ClCompile Include="Scenes\Week 3\PongScene.cpp" />
     <ClCompile Include="Scenes\Week 3\ComponentTestScene.cpp" />
@@ -102,6 +103,8 @@
     <ClCompile Include="Prefabs\TorusPrefab.cpp" />
     <ClCompile Include="Materials\ColorMaterial.cpp" />
     <ClCompile Include="Scenes\Week 3\MinionScene.cpp" />
+    <ClCompile Include="Scenes\Week 4\SpikyScene.cpp" />
+    <ClCompile Include="Scenes\Week 4\SpriteTestScene.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
@@ -118,6 +121,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Materials\UberMaterial.cpp" />
+    <ClCompile Include="Scenes\Week 4\UberMaterialScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OverlordEngine\OverlordEngine.vcxproj">
@@ -126,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Materials\DiffuseMaterial.h" />
+    <ClInclude Include="Materials\SpikyMaterial.h" />
     <ClInclude Include="Scenes\Week 4\ModelTestScene.h" />
     <ClInclude Include="Scenes\Week 3\PongScene.h" />
     <ClInclude Include="Scenes\Week 3\ComponentTestScene.h" />
@@ -134,9 +139,12 @@
     <ClInclude Include="Prefabs\TorusPrefab.h" />
     <ClInclude Include="Materials\ColorMaterial.h" />
     <ClInclude Include="Scenes\Week 3\MinionScene.h" />
+    <ClInclude Include="Scenes\Week 4\SpikyScene.h" />
+    <ClInclude Include="Scenes\Week 4\SpriteTestScene.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="Materials\UberMaterial.h" />
+    <ClInclude Include="Scenes\Week 4\UberMaterialScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

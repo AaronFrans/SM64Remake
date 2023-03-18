@@ -1,509 +1,122 @@
-/*
-******************
-* DAE Ubershader *
-******************
+//************
+// VARIABLES *
+//************
+float4x4 m_MatrixWorldViewProj : WORLDVIEWPROJECTION;
+float4x4 m_MatrixWorld : WORLD;
+float3 m_LightDirection : DIRECTION
+<
+	string Object="TargetLight";
+> = float3(0.577f, -0.577f, 0.577f);
 
-**This Shader Contains:
+float3 gColorDiffuse : COLOR = float3(1,1,1);
 
-- Diffuse (Texture & Color)
-	- Regular Diffuse
-- Specular
-	- Specular Level (Texture & Value)
-	- Shininess (Value)
-	- Models
-		- Blinn
-		- Phong
-- Ambient (Color)
-- EnvironmentMapping (CubeMap)
-	- Reflection + Fresnel Falloff
-	- Refraction
-- Normal (Texture)
-- Opacity (Texture & Value)
+float gSpikeLength
+<
+	string UIWidget="Slider";
+	float UIMin=0.0f;
+	float UIMax=0.5f;
+	float UIStep=0.0001f;
+> = 0.2f;
 
--Techniques
-	- WithAlphaBlending
-	- WithoutAlphaBlending
-*/
-
-//GLOBAL MATRICES
-//***************
-// The World View Projection Matrix
-float4x4 gMatrixWVP : WORLDVIEWPROJECTION;
-// The ViewInverse Matrix - the third row contains the camera position!
-float4x4 gMatrixViewInverse : VIEWINVERSE;
-// The World Matrix
-float4x4 gMatrixWorld : WORD;
-
-//STATES
-//******
-RasterizerState gRS_FrontCulling 
+RasterizerState FrontCulling 
 { 
 	CullMode = FRONT; 
 };
 
-BlendState gBS_EnableBlending 
-{     
-	BlendEnable[0] = TRUE;
-	SrcBlend = SRC_ALPHA;
-    DestBlend = INV_SRC_ALPHA;
-};
-
-//SAMPLER STATES
-//**************
-SamplerState gTextureSampler
+//**********
+// STRUCTS *
+//**********
+struct VS_DATA
 {
-	Filter = MIN_MAG_MIP_LINEAR;
- 	AddressU = WRAP;
-	AddressV = WRAP;
-	AddressW = WRAP;
+    float3 Position : POSITION;
+    float3 Normal : NORMAL;
 };
 
-//LIGHT
-//*****
-float3 gLightDirection :DIRECTION
-<
-	string UIName = "Light Direction";
-	string Object = "TargetLight";
-> = float3(0.577f, 0.577f, 0.577f);
+struct GS_DATA
+{
+    float4 Position : SV_POSITION;
+    float3 Normal : NORMAL;
+};
 
-//DIFFUSE
-//*******
-bool gUseTextureDiffuse
-<
-	string UIName = "Diffuse Texture";
-	string UIWidget = "Bool";
-> = false;
+//****************
+// VERTEX SHADER *
+//****************
+GS_DATA MainVS(VS_DATA vsData)
+{
+	//Step 1.
+	//Delete this transformation code and just return the VS_DATA parameter (vsData)
+	//Don't forget to change the return type!
 
-float4 gColorDiffuse
-<
-	string UIName = "Diffuse Color";
-	string UIWidget = "Color";
-> = float4(1,1,1,1);
+    GS_DATA temp = (GS_DATA) 0;
+    temp.Position = mul(float4(vsData.Position, 1), m_MatrixWorldViewProj);
+    temp.Normal = mul(vsData.Normal, (float3x3) m_MatrixWorld);
 
-Texture2D gTextureDiffuse
-<
-	string UIName = "Diffuse Texture";
-	string UIWidget = "Texture";
-    string ResourceName = "Diffuse.dds";
-    string ResourceType = "2D";
->;
+    return temp;
+}
 
-//SPECULAR
-//********
-float4 gColorSpecular
-<
-	string UIName = "Specular Color";
-	string UIWidget = "Color";
-> = float4(1,1,1,1);
+//******************
+// GEOMETRY SHADER *
+//******************
+void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float3 normal, float2 texCoord)
+{
+	//Step 1. Create a GS_DATA object
+	//Step 2. Transform the position using the WVP Matrix and assign it to (GS_DATA object).Position (Keep in mind: float3 -> float4)
+	//Step 3. Transform the normal using the World Matrix and assign it to (GS_DATA object).Normal (Only Rotation, No translation!)
+	//Step 4. Append (GS_DATA object) to the TriangleStream parameter (TriangleStream::Append(...))
+}
 
-Texture2D gTextureSpecularIntensity
-<
-	string UIName = "Specular Level Texture";
-	string UIWidget = "Texture";
-    string ResourceName = "Specular.dds";
-    string ResourceType = "2D";
->;
+[maxvertexcount(6)]
+void SpikeGenerator(triangle VS_DATA vertices[3], inout TriangleStream<GS_DATA> triStream)
+{
+	//Use these variable names
+    float3 basePoint, top, left, right, spikeNormal;
 
-bool gUseTextureSpecularIntensity
-<
-	string UIName = "Specular Level Texture";
-	string UIWidget = "Bool";
-> = false;
+	//Step 1. Calculate CENTER_POINT
+	//Step 2. Calculate Face Normal (Original Triangle)
+	//Step 3. Offset CENTER_POINT (use gSpikeLength)
+	//Step 4 + 5. Calculate Individual Face Normals (Cross Product of Face Edges) & Create Vertices for every face
 
-int gShininess
-<
-	string UIName = "Shininess";
-	string UIWidget = "Slider";
-	float UIMin = 1;
-	float UIMax = 100;
-	float UIStep = 0.1f;
-> = 15;
+        //FACE 1
+        //faceNormal1 = ...
+        //CreateVertex(triStream, ...)
+        //CreateVertex(triStream, ...)
+        //CreateVertex(triStream, ...)
 
-//AMBIENT
-//*******
-float4 gColorAmbient
-<
-	string UIName = "Ambient Color";
-	string UIWidget = "Color";
-> = float4(0,0,0,1);
+        //Restart Strip! >> We want to start a new triangle (= interrupt trianglestrip)
+        //(TriangleStream::RestartStrip())
 
-float gAmbientIntensity
-<
-	string UIName = "Ambient Intensity";
-	string UIWidget = "slider";
-	float UIMin = 0;
-	float UIMax = 1;
->  = 0.0f;
+        //FACE 2
+        //...
 
-//NORMAL MAPPING
-//**************
-bool gFlipGreenChannel
-<
-	string UIName = "Flip Green Channel";
-	string UIWidget = "Bool";
-> = false;
+        //...
 
-bool gUseTextureNormal
-<
-	string UIName = "Normal Mapping";
-	string UIWidget = "Bool";
-> = false;
+        //Face 3
+        //...
 
-Texture2D gTextureNormal
-<
-	string UIName = "Normal Texture";
-	string UIWidget = "Texture";
->;
+    //Step 6. Complete code in CreateVertex(...)
+    //Step 7. Bind this Geometry Shader function to the effect pass (See Technique Struct)
+}
 
-//ENVIRONMENT MAPPING
-//*******************
-TextureCube gCubeEnvironment
-<
-	string UIName = "Environment Cube";
-    string ResourceName = "Cubemap.dds";
-	string ResourceType = "Cube";
->;
-
-bool gUseEnvironmentMapping
-<
-	string UIName = "Environment Mapping";
-	string UIWidget = "Bool";
-> = false;
-
-float gReflectionStrength
-<
-	string UIName = "Reflection Strength";
-	string UIWidget = "slider";
-	float UIMin = 0;
-	float UIMax = 1;
-	float UIStep = 0.1;
->  = 0.0f;
-
-float gRefractionStrength
-<
-	string UIName = "Refraction Strength";
-	string UIWidget = "slider";
-	float UIMin = 0;
-	float UIMax = 1;
-	float UIStep = 0.1;
->  = 0.0f;
-
-float gRefractionIndex
-<
-	string UIName = "Refraction Index";
->  = 0.3f;
-
-//FRESNEL FALLOFF
 //***************
-bool gUseFresnelFalloff
-<
-	string UIName = "Fresnel FallOff";
-	string UIWidget = "Bool";
-> = false;
-
-
-float4 gColorFresnel
-<
-	string UIName = "Fresnel Color";
-	string UIWidget = "Color";
-> = float4(1,1,1,1);
-
-float gFresnelPower
-<
-	string UIName = "Fresnel Power";
-	string UIWidget = "slider";
-	float UIMin = 0;
-	float UIMax = 100;
-	float UIStep = 0.1;
->  = 1.0f;
-
-float gFresnelMultiplier
-<
-	string UIName = "Fresnel Multiplier";
-	string UIWidget = "slider";
-	float UIMin = 1;
-	float UIMax = 100;
-	float UIStep = 0.1;
->  = 1.0;
-
-float gFresnelHardness
-<
-	string UIName = "Fresnel Hardness";
-	string UIWidget = "slider";
-	float UIMin = 0;
-	float UIMax = 100;
-	float UIStep = 0.1;
->  = 0;
-
-//OPACITY
+// PIXEL SHADER *
 //***************
-float gOpacityIntensity
-<
-	string UIName = "Opacity Intensity";
-	string UIWidget = "slider";
-	float UIMin = 0;
-	float UIMax = 1;
->  = 1.0f;
-
-bool gTextureOpacityIntensity
-<
-	string UIName = "Opacity Map";
-	string UIWidget = "Bool";
-> = false;
-
-Texture2D gTextureOpacity
-<
-	string UIName = "Opacity Map";
-	string UIWidget = "Texture";
-    string ResourceName = "Oppacity.dds";
-    string ResourceType = "2D";
->;
-
-
-//SPECULAR MODELS
-//***************
-bool gUseSpecularBlinn
-<
-	string UIName = "Specular Blinn";
-	string UIWidget = "Bool";
-> = false;
-
-bool gUseSpecularPhong
-<
-	string UIName = "Specular Phong";
-	string UIWidget = "Bool";
-> = false;
-
-//VS IN & OUT
-//***********
-struct VS_Input
+float4 MainPS(GS_DATA input) : SV_TARGET
 {
-	float3 Position: POSITION;
-	float3 Normal: NORMAL;
-	float3 Tangent: TANGENT;
-	float2 TexCoord: TEXCOORD0;
-};
+    input.Normal=normalize(input.Normal);
+	float diffuseStrength = max(dot(normalize(m_LightDirection),-input.Normal),0.2f); 
+	return float4(gColorDiffuse*diffuseStrength,1.0f);
+}
 
-struct VS_Output
+//*************
+// TECHNIQUES *
+//*************
+technique10 Default //FXComposer >> Rename to "technique10 Default"
 {
-	float4 Position: SV_POSITION;
-	float4 WorldPosition: COLOR0;
-	float3 Normal: NORMAL;
-	float3 Tangent: TANGENT;
-	float2 TexCoord: TEXCOORD0;
-};
-
-float3 CalculateSpecularBlinn(float3 viewDirection, float3 normal, float2 texCoord)
-{
-	float3 specularColor = float3(0,0,0);
-	
-	if (gUseTextureSpecularIntensity)
-	{
-		float3 halfVec = normalize(gLightDirection + -viewDirection);
-		float dotResult = saturate(dot(halfVec, normal));
-		specularColor = pow(dotResult, gShininess) *
-		gTextureSpecularIntensity.Sample(gTextureSampler, texCoord);
-		
-	}
-	return specularColor * gColorSpecular;
+    pass p0
+    {
+        SetRasterizerState(FrontCulling);
+        SetVertexShader(CompileShader(vs_4_0, MainVS()));
+        SetGeometryShader(NULL);
+        SetPixelShader(CompileShader(ps_4_0, MainPS()));
+    }
 }
-
-float Phong(float ks, float exp, float3 l, float3 v, float3 n)
-{
-	float3 reflectedLightVector = reflect(l,n);
-	float reflectedViewDot = saturate(dot(reflectedLightVector, v));
-	float phong = ks * pow(reflectedViewDot, exp);
-
-	return phong;
-}
-
-float3 CalculateSpecularPhong(float3 viewDirection, float3 normal, float2 texCoord)
-{
-	float3 specularColor = float3(0,0,0);
-	if (gUseTextureSpecularIntensity)
-	{
-	  float phongExp = gShininess;
-	  specularColor = Phong(1.0f, phongExp, -gLightDirection, viewDirection, normal) *
-	  gTextureSpecularIntensity.Sample(gTextureSampler, texCoord); 
-	  
-	}
-	
-	return specularColor * gColorSpecular;
-}
-
-float3 CalculateSpecular(float3 viewDirection, float3 normal, float2 texCoord)
-{
-	float3 specColor = CalculateSpecularBlinn(viewDirection, normal, texCoord) * gUseSpecularBlinn +
-					   CalculateSpecularPhong(viewDirection, normal, texCoord) * gUseSpecularPhong;
-				
-	return specColor;
-}
-
-float3 CalculateNormal(float3 tangent, float3 normal, float2 texCoord)
-{
-	
-	if(gUseTextureNormal)
-	{
-	
-		float3 binormal = cross(normal, tangent);
-		if(gFlipGreenChannel)
-			binormal = -binormal;
-	
-		float4x4 tangentSpaceAxis = float4x4(
-			float4(tangent, 0.0f),
-			float4(binormal, 0.0f),
-			float4(normal, 0.0f),
-			float4(0.0f, 0.0f, 0.0f, 1.0f)
-		);
-
-		float3 currentNormalMap = 2.0f * gTextureNormal.Sample(gTextureSampler, texCoord).rgb - float3(1.0f, 1.0f, 1.0f);
-
-
-		return mul(float4(currentNormalMap, 0.0f), tangentSpaceAxis) ;
-	}
-	else
-	{
-		return 	normal;
-	}
-}
-
-float3 CalculateDiffuse(float3 normal, float2 texCoord)
-{
-	float3 diffColor;
-	
-	if(gUseTextureDiffuse)
-	 	diffColor = gTextureDiffuse.Sample(gTextureSampler, texCoord).rgb * gColorDiffuse;
-	else
-		diffColor = gColorDiffuse;
-	
-	float diffuseStrength = dot(gLightDirection, -normal);
-	diffuseStrength = saturate(diffuseStrength);
-	diffColor *= diffuseStrength;
-	
-	return diffColor;
-}
-
-float3 CalculateFresnelFalloff(float3 normal, float3 viewDirection, float3 environmentColor)
-{
-	//gUseFresnelFalloff
-	//gFresnelPower
-	//gFresnelHarness
-	//gFresnelMultiplier
-	//gUseTextureEnvironment
-	//gColorFresnel
-	float3 fresnelFalloff;
-	
-	if(gUseFresnelFalloff)
-	{
-		float fresnel = (pow(1- saturate(abs(dot(normal, viewDirection))), gFresnelPower)) * gFresnelMultiplier;
-		float fresnelMask = pow(1 - saturate(dot(float3(0, -1, 0), normal)), gFresnelHardness);
-		
-		if(gUseEnvironmentMapping)
-			fresnelFalloff = fresnel * fresnelMask * environmentColor;
-		else
-			fresnelFalloff = fresnel * fresnelMask * float3(1,1,1);
-	}
-	return fresnelFalloff;
-}
-
-float3 CalculateEnvironment(float3 viewDirection, float3 normal)
-{
-	float3 environment = float3(0,0,0);
-	
-	if(gUseEnvironmentMapping)
-	{
-		
-		float3 reflectVec = reflect(viewDirection, normal);
-	 	environment += gReflectionStrength * gCubeEnvironment.Sample(gTextureSampler, reflectVec).rgb;
-		
-		float3 refractVec = refract(viewDirection, normal, gRefractionIndex);
-        environment += gRefractionStrength * gCubeEnvironment.Sample(gTextureSampler, refractVec).rgb;
-	}
-	
-	return environment;
-}
-
-float CalculateOpacity(float2 texCoord)
-{
-	//gOpacityIntensity
-	//gUseTextureOpacity
-	//gTextureSampler
-	float opacity = gOpacityIntensity;
-	if(gTextureOpacityIntensity)
-	{
-		opacity *= gTextureOpacity.Sample(gTextureSampler, texCoord);
-	}
-	
-	return opacity;
-}
-
-// The main vertex shader
-VS_Output MainVS(VS_Input input) {
-	
-	VS_Output output = (VS_Output)0;
-	
-	output.Position = mul(float4(input.Position, 1.0), gMatrixWVP);
-	output.WorldPosition = mul(float4(input.Position,1.0), gMatrixWorld);
-	output.Normal = mul(input.Normal, (float3x3)gMatrixWorld);
-	output.Tangent = mul(input.Tangent, (float3x3)gMatrixWorld);
-	output.TexCoord = input.TexCoord;
-	
-	return output;
-}
-
-// The main pixel shader
-float4 MainPS(VS_Output input) : SV_TARGET {
-	// NORMALIZE
-	input.Normal = normalize(input.Normal);
-	input.Tangent = normalize(input.Tangent);
-	
-	float3 viewDirection = normalize(input.WorldPosition.xyz - gMatrixViewInverse[3].xyz);
-	
-	//NORMAL
-	float3 newNormal = CalculateNormal(input.Tangent, input.Normal, input.TexCoord);
-		
-	//SPECULAR
-	float3 specColor = CalculateSpecular(viewDirection, newNormal, input.TexCoord);
-		
-	//DIFFUSE
-	float3 diffColor = CalculateDiffuse(newNormal, input.TexCoord);
-		
-	//AMBIENT
-	float3 ambientColor = gColorAmbient * gAmbientIntensity;
-		
-	//ENVIRONMENT MAPPING
-	float3 environmentColor = CalculateEnvironment(viewDirection, newNormal);
-	
-	//FRESNEL FALLOFF
-	environmentColor = CalculateFresnelFalloff(newNormal, viewDirection, environmentColor);
-		
-	//FINAL COLOR CALCULATION
-	float3 finalColor = diffColor + specColor + environmentColor + ambientColor;
-	
-	//OPACITY
-	float opacity = CalculateOpacity(input.TexCoord);
-	
-	return float4(finalColor,opacity);
-}
-
-// Default Technique
-technique10 WithAlphaBlending {
-	pass p0 {
-		SetRasterizerState(gRS_FrontCulling);
-		SetBlendState(gBS_EnableBlending,float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
-		SetVertexShader(CompileShader(vs_4_0, MainVS()));
-		SetGeometryShader( NULL );
-		SetPixelShader(CompileShader(ps_4_0, MainPS()));
-	}
-}
-
-// Default Technique
-technique10 WithoutAlphaBlending {
-	pass p0 {
-		SetRasterizerState(gRS_FrontCulling);
-		SetVertexShader(CompileShader(vs_4_0, MainVS()));
-		SetGeometryShader( NULL );
-		SetPixelShader(CompileShader(ps_4_0, MainPS()));
-	}
-}
-

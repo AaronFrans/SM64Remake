@@ -44,9 +44,8 @@ SpriteRenderer::~SpriteRenderer()
 	m_Textures.clear();
 }
 
-void SpriteRenderer::UpdateBuffer(const SceneContext& /*sceneContext*/)
+void SpriteRenderer::UpdateBuffer(const SceneContext& sceneContext)
 {
-	TODO_W4(L"Complete UpdateBuffer")
 
 	if (!m_pVertexBuffer || m_Sprites.size() > m_BufferSize)
 	{
@@ -58,6 +57,27 @@ void SpriteRenderer::UpdateBuffer(const SceneContext& /*sceneContext*/)
 		//
 		//		Finally create the buffer (sceneContext.d3dContext.pDevice). Be sure to log the HResult! (HANDLE_ERROR)
 
+		if (m_pVertexBuffer) m_pVertexBuffer->Release();
+
+		if (m_Sprites.size() != m_BufferSize) m_BufferSize = static_cast<UINT>(m_Sprites.size());
+
+		D3D11_BUFFER_DESC bd{};
+		bd.Usage = D3D11_USAGE_DYNAMIC;
+		bd.ByteWidth = sizeof(VertexSprite) * static_cast<uint32_t>(m_Sprites.size());
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		bd.MiscFlags = 0;
+
+
+		D3D11_SUBRESOURCE_DATA initData{};
+		initData.pSysMem = m_Sprites.data();
+
+		HRESULT result =  sceneContext.d3dContext.pDevice->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
+
+		if (FAILED(result))
+		{
+			Logger::LogError(L"Couldn't create a vertex buffer for the SpriteRenderer");
+		}
 
 		ASSERT_NULL_(m_pVertexBuffer);
 	}
@@ -90,6 +110,12 @@ void SpriteRenderer::UpdateBuffer(const SceneContext& /*sceneContext*/)
 		// Next you will need to use the device context to map the vertex buffer to the mapped resource
 		// use memcpy to copy all our sprite vertices (m_Sprites) to the mapped resource (D3D11_MAPPED_SUBRESOURCE::pData)
 		// unmap the vertex buffer
+		D3D11_MAPPED_SUBRESOURCE ms{};
+		sceneContext.d3dContext.pDeviceContext->Map(m_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
+
+		memcpy(ms.pData, m_Sprites.data(), m_BufferSize);
+
+		sceneContext.d3dContext.pDeviceContext->Unmap(m_pVertexBuffer, 0);
 	}
 }
 

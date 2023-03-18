@@ -5,15 +5,6 @@ class SpherePrefab;
 class  ModelTestScene final : public GameScene
 {
 public:
-	enum Inputs
-	{
-		Start,
-		Reset,
-		LeftUp,
-		LeftDown,
-		RigthUp,
-		RigthDown,
-	};
 
 	ModelTestScene();
 	~ModelTestScene() override = default;
@@ -25,9 +16,6 @@ public:
 
 protected:
 	void Initialize() override;
-	void PostInitialize() override;
-
-	void Update() override;
 
 private:
 
