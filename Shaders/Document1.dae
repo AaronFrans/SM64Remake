@@ -9,7 +9,7 @@
 		</contributor>
 		<created>2023-03-09T12:23:10Z</created>
 		<keywords>FXComposer, NVIDIA</keywords>
-		<modified>2023-03-18T13:59:12Z</modified>
+		<modified>2023-03-18T15:49:44Z</modified>
 		<subject/>
 		<title/>
 		<unit/>
@@ -244,13 +244,13 @@
 				<technique_hint platform="PC-D3D10" ref="Default"/>
 				<technique_hint platform="PC-D3D" ref="technique0"/>
 				<setparam ref="m_MatrixWorldViewProj">
-					<float4x4>2.74748 0 0 0 0 2.74748 0 0 0 0 -1.00006 4.7446 0 0 -1 4.74525</float4x4>
+					<float4x4>1.47409 4.81545e-006 -1.06501 7.47207 0.275417 2.70693 0.381221 -0.288248 -0.577021 0.171186 -0.798664 4.03998 -0.576986 0.171176 -0.798615 4.04053</float4x4>
 				</setparam>
 				<setparam ref="m_MatrixWorld">
-					<float4x4>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</float4x4>
+					<float4x4>1 0 0 2.7901 0 1 0 1.00062 0 0 1 0 0 0 0 1</float4x4>
 				</setparam>
 				<setparam ref="m_LightDirection">
-					<float3>0.996546 -0 0.0830455</float3>
+					<float3>0.577 -0.577 0.577</float3>
 				</setparam>
 				<setparam ref="gColorDiffuse">
 					<float3>1 1 1</float3>
