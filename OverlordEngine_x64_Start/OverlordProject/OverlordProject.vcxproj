@@ -93,6 +93,8 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Materials\DiffuseMaterial_Skinned.cpp" />
+    <ClCompile Include="Scenes\Week 6\HardwareSkinningScene.cpp" />
     <ClCompile Include="Prefabs\BoneObject.cpp" />
     <ClCompile Include="Materials\DiffuseMaterial.cpp" />
     <ClCompile Include="Materials\SpikyMaterial.cpp" />
@@ -133,6 +135,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Materials\DiffuseMaterial_Skinned.h" />
+    <ClInclude Include="Scenes\Week 6\HardwareSkinningScene.h" />
     <ClInclude Include="Prefabs\BoneObject.h" />
     <ClInclude Include="Materials\DiffuseMaterial.h" />
     <ClInclude Include="Materials\SpikyMaterial.h" />

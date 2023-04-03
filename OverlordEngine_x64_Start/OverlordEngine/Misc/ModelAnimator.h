@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 class ModelAnimator final
 {
 public:
@@ -32,6 +33,6 @@ private:
 	MeshFilter* m_pMeshFilter{};
 	std::vector<XMFLOAT4X4> m_Transforms{};
 	bool m_IsPlaying{}, m_Reversed{}, m_ClipSet{};
-	float m_TickCount{}, m_AnimationSpeed{ 1.f };
+	float m_TickCount{}, m_AnimationSpeed{1.f};
 };
 
