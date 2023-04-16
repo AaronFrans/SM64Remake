@@ -75,12 +75,7 @@ void W1_AssignmentScene::Initialize()
 		pBlockDynamic->setMass(0.5f);
 
 		m_pCubeWallDynamics.push_back(pBlockDynamic);
-<<<<<<< HEAD
-
-		PxRigidActorExt::createExclusiveShape(*m_pCubeWallDynamics.back(), blockGeomitry, *pMatBlock);
-=======
 		PxRigidActorExt::createExclusiveShape(*pBlockDynamic, blockGeomitry, *pMatBlock);
->>>>>>> a4c5993d6c2e3f9815230371491cc6a97add2653
 
 
 		m_pCubeWall[curBlock]->AttachRigidActor(pBlockDynamic);
@@ -122,13 +117,7 @@ void W1_AssignmentScene::Initialize()
 
 void W1_AssignmentScene::Update()
 {
-<<<<<<< HEAD
-
-
-	const float moveSpeedBase{ 5000 };
-=======
-	const float moveSpeedBase{ 2000 };
->>>>>>> a4c5993d6c2e3f9815230371491cc6a97add2653
+	constexpr float moveSpeedBase{ 5000 };
 	const float moveSpeed{ moveSpeedBase * m_SceneContext.GetGameTime()->GetElapsed() };
 	XMFLOAT3 camForward = m_SceneContext.GetCamera()->GetForward();
 	XMFLOAT3 camRigth = m_SceneContext.GetCamera()->GetRight();
@@ -175,8 +164,7 @@ void W1_AssignmentScene::SetBallPos()
 	m_pBall->Translate(0, ballYPos, ballZPos);
 	if (m_IsInitialized)
 	{
-		m_pBallDynamic->putToSleep();
-		m_pBallDynamic->wakeUp();
+		ResetDynamicBody(m_pBallDynamic);
 	}
 }
 
@@ -198,17 +186,9 @@ void W1_AssignmentScene::SetupWallPos()
 		const float YRotation{ static_cast<float>(rand() % 30) };
 
 		m_pCubeWall[row * m_NrBlocksPerRow + col]->RotateDegrees(0, YRotation, 0);
-<<<<<<< HEAD
 
 		if (m_IsInitialized)
 			ResetDynamicBody(m_pCubeWallDynamics[row * m_NrBlocksPerRow + col]);
-=======
-		if (m_IsInitialized)
-		{
-			m_pCubeWallDynamics[row * m_NrBlocksPerRow + col]->putToSleep();
-			m_pCubeWallDynamics[row * m_NrBlocksPerRow + col]->wakeUp();
-		}
->>>>>>> a4c5993d6c2e3f9815230371491cc6a97add2653
 	}
 }
 

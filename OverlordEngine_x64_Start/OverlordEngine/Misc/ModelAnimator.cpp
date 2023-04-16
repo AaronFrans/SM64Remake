@@ -65,6 +65,7 @@ void ModelAnimator::Update(const SceneContext& sceneContext)
 		float distanceFromA = m_TickCount - keyA.tick;
 		const auto blendFactor = distanceFromA / range;
 		//Clear the m_Transforms vector
+		m_Transforms.clear();
 		//FOR every boneTransform in a key (So for every bone)
 		//	Retrieve the transform from keyA (transformA)
 		//	auto transformA = ...
@@ -97,7 +98,12 @@ void ModelAnimator::Update(const SceneContext& sceneContext)
 			const XMMATRIX newTransform{ XMMatrixScalingFromVector(scale) * XMMatrixRotationQuaternion(rotation)
 				* XMMatrixTranslationFromVector(translation) };
 
-			XMStoreFloat4x4(&m_Transforms[i], newTransform);
+			XMFLOAT4X4 temp;
+
+			XMStoreFloat4x4(&temp, newTransform);
+
+			m_Transforms.emplace_back(temp);
+
 		}
 	}
 }

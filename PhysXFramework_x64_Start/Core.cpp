@@ -12,7 +12,7 @@
 GameSettings Core::m_GameSettings{};
 
 Core::Core()
-	: m_WindowClassName{L"GP2_PhysXFramework_2022"}
+	: m_WindowClassName{L"GP2 - Milestone 1 (2023) | (2DAE15) Frans Aaron"}
 	, m_IsActive{ true }
 	, m_pSceneManager{ new SceneManager{} }
 

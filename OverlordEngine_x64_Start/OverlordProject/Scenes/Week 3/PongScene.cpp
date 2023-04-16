@@ -9,7 +9,7 @@
 
 
 PongScene::PongScene() :
-	GameScene(L"Component Test Scene") {}
+	GameScene(L"Pong Scene") {}
 
 void PongScene::Initialize()
 {
@@ -25,7 +25,7 @@ void PongScene::Initialize()
 
 
 	m_pCamera->GetTransform()->Translate(0, 20, -50);
-	m_pCamera->GetTransform()->Rotate(0, 0, 0); // -> does not work?
+	m_pCamera->GetTransform()->Rotate(0, 0, 0);
 	AddChild(m_pCamera)->GetComponent<CameraComponent>()->SetActive();
 	//m_SceneContext.pCamera->SetActive(m_pCamera);
 
@@ -143,7 +143,7 @@ void PongScene::Initialize()
 
 	//Ball
 
-	m_pPongBall = new SpherePrefab();
+	m_pPongBall = new SpherePrefab(1, 10, { 1,0,0,1 });
 	m_pPongBall->GetTransform()->Translate(ORIGINAL_BALL_POSS.x, ORIGINAL_BALL_POSS.y, ORIGINAL_BALL_POSS.z);
 
 	pRigidBody = m_pPongBall->AddComponent(new RigidBodyComponent(false));
@@ -180,6 +180,13 @@ void PongScene::Initialize()
 	m_SceneContext.pInput->AddInputAction(action);
 	action = InputAction{ Inputs::RigthDown, InputState::down, 'K' };
 	m_SceneContext.pInput->AddInputAction(action);
+
+
+
+	m_SceneContext.settings.clearColor = { 0, 0, 0, 1 };
+	m_SceneContext.settings.drawGrid = false;
+	m_SceneContext.settings.drawPhysXDebug= false;
+	m_SceneContext.settings.drawUserDebug= false;
 
 }
 

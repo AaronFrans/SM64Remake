@@ -49,26 +49,26 @@ void W2_AssignmentScene::Initialize()
 	const XMFLOAT3 boxSizes{ 1.5f, 1.5f, 1.5f };
 
 	//BoxLeft
-	const auto pBoxLeft = new CubePosColorNorm(boxSizes.x, boxSizes.y, boxSizes.z, XMFLOAT4{ Colors::Blue });
-	AddGameObject(pBoxLeft);
+	m_pBoxLeft = new CubePosColorNorm(boxSizes.x, boxSizes.y, boxSizes.z, XMFLOAT4{ Colors::Blue });
+	AddGameObject(m_pBoxLeft);
 
 	const auto pBoxLeftActor = pPhysX->createRigidDynamic(PxTransform{ PxIdentity });
 	const auto pBoxLeftShape = PxRigidActorExt::createExclusiveShape(*pBoxLeftActor, PxBoxGeometry{ boxSizes.x / 2, boxSizes.y / 2, boxSizes.z / 2 }, *pBoxMat);
 
-	pBoxLeft->AttachRigidActor(pBoxLeftActor);
+	m_pBoxLeft->AttachRigidActor(pBoxLeftActor);
 
-	pBoxLeft->Translate(-3, 5, 0);
+	m_pBoxLeft->Translate(-3, 5, 0);
 
 	//BoxRigth
-	const auto pBoxRigth = new CubePosColorNorm(boxSizes.x, boxSizes.y, boxSizes.z, XMFLOAT4{ Colors::Red });
-	AddGameObject(pBoxRigth);
+	m_pBoxRight = new CubePosColorNorm(boxSizes.x, boxSizes.y, boxSizes.z, XMFLOAT4{ Colors::Red });
+	AddGameObject(m_pBoxRight);
 
 	const auto pBoxRightActor = pPhysX->createRigidDynamic(PxTransform{ PxIdentity });
 	const auto pBoxRightShape = PxRigidActorExt::createExclusiveShape(*pBoxRightActor, PxBoxGeometry{ boxSizes.x / 2, boxSizes.y / 2, boxSizes.z / 2 }, *pBoxMat);
 
-	pBoxRigth->AttachRigidActor(pBoxRightActor);
+	m_pBoxRight->AttachRigidActor(pBoxRightActor);
 
-	pBoxRigth->Translate(3, 5, 0);
+	m_pBoxRight->Translate(3, 5, 0);
 
 
 
@@ -138,7 +138,7 @@ void W2_AssignmentScene::Initialize()
 
 
 
-	//Ball
+	//Player
 	m_pSphere = new SpherePosColorNorm(1.f, 10, 10, XMFLOAT4{ Colors::Gray });
 	AddGameObject(m_pSphere);
 
@@ -159,40 +159,41 @@ void W2_AssignmentScene::Initialize()
 
 
 	//Balls
+
 	//Ball1
-	const auto pSphereTop1 = new SpherePosColorNorm(1.f, 10, 10, XMFLOAT4{ Colors::Gray });
-	AddGameObject(pSphereTop1);
+	m_pSphereTopRight = new SpherePosColorNorm(1.f, 10, 10, XMFLOAT4{ Colors::Gray });
+	AddGameObject(m_pSphereTopRight);
 
-	const auto pSphereActorTop1 = pPhysX->createRigidDynamic(PxTransform{ PxIdentity });
-	PxRigidActorExt::createExclusiveShape(*pSphereActorTop1, PxSphereGeometry{ 1.f }, *pBallMat);
-	pSphereActorTop1->setMass(5);
+	const auto pSphereActorTopRight = pPhysX->createRigidDynamic(PxTransform{ PxIdentity });
+	PxRigidActorExt::createExclusiveShape(*pSphereActorTopRight, PxSphereGeometry{ 1.f }, *pBallMat);
+	pSphereActorTopRight->setMass(5);
 
-	pSphereTop1->AttachRigidActor(pSphereActorTop1);
+	m_pSphereTopRight->AttachRigidActor(pSphereActorTopRight);
 
-	pSphereTop1->Translate(1, 20, 0);
+	m_pSphereTopRight->Translate(1, 20, 0);
 
 
 	//Ball2
-	const auto pSphereTop2 = new SpherePosColorNorm(1.f, 10, 10, XMFLOAT4{ Colors::Gray });
-	AddGameObject(pSphereTop2);
+	m_pSphereTopLeft = new SpherePosColorNorm(1.f, 10, 10, XMFLOAT4{ Colors::Gray });
+	AddGameObject(m_pSphereTopLeft);
 
-	const auto pSphereActorTop2 = pPhysX->createRigidDynamic(PxTransform{ PxIdentity });
-	PxRigidActorExt::createExclusiveShape(*pSphereActorTop2, PxSphereGeometry{ 1.f }, *pBallMat);
-	pSphereActorTop2->setMass(5);
+	const auto pSphereActorTopLeft = pPhysX->createRigidDynamic(PxTransform{ PxIdentity });
+	PxRigidActorExt::createExclusiveShape(*pSphereActorTopLeft, PxSphereGeometry{ 1.f }, *pBallMat);
+	pSphereActorTopLeft->setMass(5);
 
-	pSphereTop2->AttachRigidActor(pSphereActorTop2);
+	m_pSphereTopLeft->AttachRigidActor(pSphereActorTopLeft);
 
-	pSphereTop2->Translate(-1, 20, 0);
+	m_pSphereTopLeft->Translate(-1, 20, 0);
 
 
 	//Sound Effect
 	const auto pFmod = SoundManager::GetInstance()->GetSystem();
 
-	
+
 	auto result = pFmod->createStream("Resources/Sounds/bell.mp3", FMOD_2D | FMOD_LOOP_OFF, nullptr, &m_pSound2D);
 	SoundManager::GetInstance()->ErrorCheck(result);
 
-	
+
 
 
 }
@@ -201,6 +202,10 @@ void W2_AssignmentScene::Update()
 {
 	constexpr float force{ 5 };
 
+	if (m_SceneContext.GetInput()->IsKeyboardKey(InputTriggerState::down, 'R'))
+	{
+		ResetScene();
+	}
 	if (m_SceneContext.GetInput()->IsKeyboardKey(InputTriggerState::down, VK_LEFT))
 	{
 		m_pSphere->GetRigidActor()->is<PxRigidDynamic>()->addTorque({ 0, 0, force });
@@ -236,6 +241,7 @@ void W2_AssignmentScene::Update()
 		auto result = pFmod->playSound(m_pSound2D, nullptr, false, &m_pChannel2D);
 		SoundManager::GetInstance()->ErrorCheck(result);
 
+		m_pChannel2D->setPaused(false);
 		m_RightTriggered = false;
 		m_RightRotating = true;
 	}
@@ -295,7 +301,7 @@ void W2_AssignmentScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 			continue;
 
 		const PxTriggerPair& pair = pairs[i];
-		if (pair.triggerActor == m_pTriggerLeft)
+		if (pair.triggerActor == m_pTriggerLeft && pair.otherActor == m_pBoxLeft->GetRigidActor())
 		{
 			if (pair.status == PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
@@ -303,7 +309,7 @@ void W2_AssignmentScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 				m_LeftTriggered = true;
 			}
 		}
-		if (pair.triggerActor == m_pTriggerRight)
+		if (pair.triggerActor == m_pTriggerRight && pair.otherActor == m_pBoxRight->GetRigidActor())
 		{
 			if (pair.status == PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
@@ -313,4 +319,67 @@ void W2_AssignmentScene::onTrigger(PxTriggerPair* pairs, PxU32 count)
 		}
 	}
 
+}
+
+void W2_AssignmentScene::ResetScene()
+{
+
+	m_pHatchLeft->RotateDegrees(0, 0, 0);
+	m_LeftKinematicPostion = { -9, 17, 0 };
+	m_pHatchLeft->Translate(m_LeftKinematicPostion.x, m_LeftKinematicPostion.y, m_LeftKinematicPostion.z);
+
+	m_pHatchRight->RotateDegrees(0, 0, 0);
+	m_RightKinematicPostion = { 9, 17, 0 };
+	m_pHatchRight->Translate(m_RightKinematicPostion.x, m_RightKinematicPostion.y, m_RightKinematicPostion.z);
+
+	m_pBoxLeft->Translate(-3, 5, 0);
+	m_pBoxLeft->RotateDegrees(0, 0, 0);
+	if (auto pBoxLeft = m_pBoxLeft->GetRigidActor()->is<PxRigidDynamic>())
+	{
+		ResetDynamicBody(pBoxLeft);
+	}
+	m_pBoxRight->Translate(3, 5, 0);
+	m_pBoxRight->RotateDegrees(0, 0, 0);
+	if (auto pBoxRight = m_pBoxRight->GetRigidActor()->is<PxRigidDynamic>())
+	{
+		ResetDynamicBody(pBoxRight);
+	}
+
+
+	m_pSphere->Translate(0, 5, 0);
+	m_pSphere->RotateDegrees(0, 0, 0);
+	if (auto pSphere = m_pSphere->GetRigidActor()->is<PxRigidDynamic>())
+	{
+		ResetDynamicBody(pSphere);
+	}
+
+	m_pSphereTopRight->Translate(1, 20, 0);
+	m_pSphereTopRight->RotateDegrees(0, 0, 0);
+	if (auto pSphereTopRight = m_pSphereTopRight->GetRigidActor()->is<PxRigidDynamic>())
+	{
+		ResetDynamicBody(pSphereTopRight);
+	}
+	m_pSphereTopLeft->Translate(-1, 20, 0);
+	m_pSphereTopLeft->RotateDegrees(0, 0, 0);
+	if (auto pSphereTopLeft = m_pSphereTopLeft->GetRigidActor()->is<PxRigidDynamic>())
+	{
+		ResetDynamicBody(pSphereTopLeft);
+	}
+
+
+	m_LeftTriggered = false;
+	m_RightTriggered = false;
+
+	m_LeftRotating = false;
+	m_RightRotating = false;
+
+	m_RightAngle = 0;
+	m_LeftAngle = 0;
+
+}
+
+void W2_AssignmentScene::ResetDynamicBody(PxRigidDynamic* body)
+{
+	body->putToSleep();
+	body->wakeUp();
 }

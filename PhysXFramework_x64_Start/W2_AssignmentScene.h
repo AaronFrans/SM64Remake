@@ -3,7 +3,7 @@
 class W2_AssignmentScene : public GameScene
 {
 public:
-	W2_AssignmentScene() :GameScene(L"W2_AssignmentScene") {}
+	W2_AssignmentScene() :GameScene(L"W2_AssignmentScene (SimpleLevel + Triggers + Sound)") {}
 	~W2_AssignmentScene() override = default;
 	W2_AssignmentScene(const W2_AssignmentScene& other) = delete;
 	W2_AssignmentScene(W2_AssignmentScene&& other) noexcept = delete;
@@ -20,12 +20,23 @@ protected:
 
 private:
 
+
+	void ResetScene();
+	void ResetDynamicBody(PxRigidDynamic* body);
+
 	GameObject* m_pLevel{ nullptr };
 	GameObject* m_pSphere{ nullptr };
 
 
 	GameObject* m_pHatchLeft{ nullptr };
 	GameObject* m_pHatchRight{ nullptr };
+
+
+	GameObject* m_pBoxLeft{ nullptr };
+	GameObject* m_pBoxRight{ nullptr };
+
+	GameObject* m_pSphereTopLeft{ nullptr };
+	GameObject* m_pSphereTopRight{ nullptr };
 
 
 	PxRigidStatic* m_pTriggerLeft{ nullptr };
