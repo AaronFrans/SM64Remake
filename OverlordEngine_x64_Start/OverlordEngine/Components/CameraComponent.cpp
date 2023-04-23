@@ -60,11 +60,43 @@ void CameraComponent::SetActive(bool active)
 	ASSERT_IF(!pScene, L"Failed to set active camera. Parent game scene is null");
 
 	m_IsActive = active;
-	pScene->SetActiveCamera(active?this:nullptr); //Switch to default camera if active==false
+	pScene->SetActiveCamera(active ? this : nullptr); //Switch to default camera if active==false
 }
 
-GameObject* CameraComponent::Pick(CollisionGroup /*ignoreGroups*/) const
+GameObject* CameraComponent::Pick(CollisionGroup ignoreGroups) const
 {
-	TODO_W7(L"Implement Picking Logic")
+
+	const POINT& clickPos = InputManager::GetMousePosition();
+	const auto pScene = GetScene();
+
+	const float windowHalfWidth = pScene->GetSceneContext().windowWidth / 2;
+	const float windowHalfHeight = pScene->GetSceneContext().windowHeight / 2;
+
+	const XMFLOAT2 ndcPos = { (clickPos.x - windowHalfWidth) / windowHalfWidth , (windowHalfHeight - clickPos.y) / windowHalfHeight };
+
+	const auto vpInverse = XMLoadFloat4x4(&GetViewProjectionInverse());
+
+	const XMVECTOR nearPoint = XMVector3TransformCoord(XMVECTOR{ ndcPos.x, ndcPos.y, 0 }, vpInverse);
+	const XMVECTOR farPoint = XMVector3TransformCoord(XMVECTOR{ ndcPos.x, ndcPos.y, 1 }, vpInverse);
+
+	XMFLOAT3 nearPointF;
+	XMStoreFloat3(&nearPointF, nearPoint);
+	XMFLOAT3 farPointF;
+	XMStoreFloat3(&farPointF, farPoint);
+
+	const PxVec3 rayOrigin{ nearPointF.x, nearPointF.y, nearPointF.z };
+	const PxVec3 rayDir{ farPointF.x - nearPointF.x, farPointF.y - nearPointF.y,  farPointF.z - nearPointF.z };
+
+	PxQueryFilterData filterData{};
+
+	filterData.data.word0 = ~UINT(ignoreGroups);
+
+	PxRaycastBuffer hit{};
+	if (pScene->GetPhysxProxy()->Raycast(rayOrigin, rayDir.getNormalized(), PX_MAX_F32, hit, PxHitFlag::eDEFAULT, filterData))
+	{
+		auto pComponent = static_cast<BaseComponent*>(hit.block.actor->userData);
+		return pComponent->GetGameObject();
+	}
+
 	return nullptr;
 }

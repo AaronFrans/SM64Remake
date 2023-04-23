@@ -3,7 +3,7 @@
 
 /*LAB Content*/
 // #define W3
- #define W4
+// #define W4
 // #define W5
 // #define W6
  #define W7
@@ -23,7 +23,7 @@
 #endif
 
 #ifdef W4
-#include "Scenes/Week 4/ModelTestScene.h"
+//#include "Scenes/Week 4/ModelTestScene.h"
 //#include "Scenes/Week 4/UberMaterialScene.h"
 //#include "Scenes/Week 4/SpikyScene.h"
 //#include "Scenes/Week 4/SpriteTestScene.h"
@@ -42,7 +42,7 @@
 #ifdef W7
 //#include "Scenes/Week 7/FontTestScene.h"
 //#include "Scenes/Week 7/CharacterScene.h"
-//#include "Scenes/Week 7/PickingScene.h"
+#include "Scenes/Week 7/PickingScene.h"
 #endif
 
 #ifdef W8
@@ -76,7 +76,7 @@
 #include "Scenes/Week 10/PostProcessingScene.h"
 #endif
 
-#include "Scenes/Exam/MarioScene.h"
+//#include "Scenes/Exam/MarioScene.h"
 
 #pragma endregion
 
@@ -120,7 +120,7 @@ void MainGame::Initialize()
 
 #ifdef W7
 	//SceneManager::Get()->AddGameScene(new FontTestScene());
-	//SceneManager::Get()->AddGameScene(new PickingScene());
+	 SceneManager::Get()->AddGameScene(new PickingScene());
 	//SceneManager::Get()->AddGameScene(new CharacterScene());
 #endif
 
@@ -156,7 +156,7 @@ void MainGame::Initialize()
 #endif
 
 
-	SceneManager::Get()->AddGameScene(new MarioScene());
+	//SceneManager::Get()->AddGameScene(new MarioScene());
 }
 
 LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam, LPARAM lParam)
