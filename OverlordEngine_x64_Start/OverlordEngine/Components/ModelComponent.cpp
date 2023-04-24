@@ -114,8 +114,11 @@ void ModelComponent::ShadowMapDraw(const SceneContext& /*sceneContext*/)
 	//1. Call ShadowMapRenderer::DrawMesh with the required function arguments BUT boneTransforms are only required for skinned meshes of course..
 }
 
-void ModelComponent::SetMaterial(BaseMaterial* pMaterial, UINT8 submeshId)
+void ModelComponent::SetMaterial(BaseMaterial* pMaterial, int submeshId)
 {
+	bool loadAllSubMeshes = submeshId < 0;
+	if (loadAllSubMeshes) submeshId = 0;
+
 	//Resize Materials Array (if needed)
 	if(m_Materials.size() <= submeshId)
 	{
@@ -144,13 +147,21 @@ void ModelComponent::SetMaterial(BaseMaterial* pMaterial, UINT8 submeshId)
 
 	if (m_IsInitialized && GetScene())
 	{
-		ASSERT_IF(m_pMeshFilter->GetMeshCount() <= submeshId, L"Invalid SubMeshID({}) for current MeshFilter({} submeshes)", submeshId, m_pMeshFilter->GetMeshCount())
-		m_pMeshFilter->BuildVertexBuffer(GetScene()->GetSceneContext(), pMaterial, submeshId);
+		ASSERT_IF(m_pMeshFilter->GetMeshCount() <= (UINT8)submeshId, L"Invalid SubMeshID({}) for current MeshFilter({} submeshes)", submeshId, m_pMeshFilter->GetMeshCount())
+		m_pMeshFilter->BuildVertexBuffer(GetScene()->GetSceneContext(), pMaterial, (UINT8)submeshId);
 		m_MaterialChanged = false;
+
+		if (loadAllSubMeshes)
+		{
+			for (UINT8 i = 1; i < (UINT8)m_pMeshFilter->GetMeshCount(); ++i)
+			{
+				m_pMeshFilter->BuildVertexBuffer(GetScene()->GetSceneContext(), pMaterial, i);
+			}
+		}
 	}
 }
 
-void ModelComponent::SetMaterial(UINT materialId, UINT8 submeshId)
+void ModelComponent::SetMaterial(UINT materialId, int submeshId)
 {
 	const auto pMaterial = MaterialManager::Get()->GetMaterial(materialId);
 	SetMaterial(pMaterial, submeshId);

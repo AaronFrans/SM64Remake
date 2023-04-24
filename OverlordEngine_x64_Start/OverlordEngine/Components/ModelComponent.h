@@ -15,8 +15,8 @@ public:
 	ModelComponent& operator=(const ModelComponent& other) = delete;
 	ModelComponent& operator=(ModelComponent&& other) noexcept = delete;
 
-	void SetMaterial(BaseMaterial* pMaterial, UINT8 submeshId = 0);
-	void SetMaterial(UINT materialId, UINT8 submeshId = 0);
+	void SetMaterial(BaseMaterial* pMaterial, int submeshId = -1);
+	void SetMaterial(UINT materialId, int submeshId = -1);
 
 	ModelAnimator* GetAnimator() const { return m_pAnimator; }
 	bool HasAnimator() const { return m_pAnimator != nullptr; }

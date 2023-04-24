@@ -29,6 +29,7 @@
     <ClCompile Include="Scenes\Week 7\PickingScene.cpp" />
     <ClCompile Include="Scenes\Exam\MarioScene.cpp" />
     <ClCompile Include="Materials\EntityMaterial.cpp" />
+    <ClCompile Include="Prefabs\Character.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -58,5 +59,6 @@
     <ClInclude Include="Scenes\Week 7\PickingScene.h" />
     <ClInclude Include="Scenes\Exam\MarioScene.h" />
     <ClInclude Include="Materials\EntityMaterial.h" />
+    <ClInclude Include="Prefabs\Character.h" />
   </ItemGroup>
 </Project>

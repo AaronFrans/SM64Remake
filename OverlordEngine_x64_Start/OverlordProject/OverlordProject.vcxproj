@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\Character.cpp" />
     <ClCompile Include="Materials\EntityMaterial.cpp" />
     <ClCompile Include="Scenes\Exam\MarioScene.cpp" />
     <ClCompile Include="Scenes\Week 7\CharacterScene.cpp" />
@@ -140,6 +141,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\Character.h" />
     <ClInclude Include="Materials\EntityMaterial.h" />
     <ClInclude Include="Scenes\Exam\MarioScene.h" />
     <ClInclude Include="Scenes\Week 7\CharacterScene.h" />

@@ -1,16 +1,31 @@
 #include "stdafx.h"
 #include "ControllerComponent.h"
 
-ControllerComponent::ControllerComponent(const PxCapsuleControllerDesc& controllerDesc):
+ControllerComponent::ControllerComponent(const PxCapsuleControllerDesc& controllerDesc) :
 	m_ControllerDesc{ controllerDesc }
 {
 }
 
 void ControllerComponent::Initialize(const SceneContext& /*sceneContext*/)
 {
-	if(!m_IsInitialized)
+	if (!m_IsInitialized)
 	{
-		TODO_W7(L"Complete the ControllerComponent Intialization")
+		const auto& gameObjectPos = m_pGameObject->GetTransform()->GetPosition();
+		m_ControllerDesc.position = { gameObjectPos.x, gameObjectPos.y, gameObjectPos.z };
+		m_ControllerDesc.userData = this;
+
+		const auto pScene = m_pGameObject->GetScene();
+		const auto pControllerManager = pScene->GetPhysxProxy()->GetControllerManager();
+
+		m_pController = pControllerManager->createController(m_ControllerDesc);
+
+
+		ASSERT_NULL(m_pController, L"Controller must exist");
+
+		m_pController->getActor()->userData = this;
+
+		SetCollisionGroup(static_cast<CollisionGroup>(m_CollisionGroups.word0));
+		SetCollisionIgnoreGroup(static_cast<CollisionGroup>(m_CollisionGroups.word1));
 	}
 }
 

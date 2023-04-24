@@ -6,7 +6,7 @@
 // #define W4
 // #define W5
 // #define W6
- #define W7
+ //#define W7
 // #define W8
 // #define W9
 // #define W10
@@ -40,8 +40,8 @@
 #endif
 
 #ifdef W7
-//#include "Scenes/Week 7/FontTestScene.h"
-//#include "Scenes/Week 7/CharacterScene.h"
+#include "Scenes/Week 7/FontTestScene.h"
+#include "Scenes/Week 7/CharacterScene.h"
 #include "Scenes/Week 7/PickingScene.h"
 #endif
 
@@ -76,7 +76,7 @@
 #include "Scenes/Week 10/PostProcessingScene.h"
 #endif
 
-//#include "Scenes/Exam/MarioScene.h"
+#include "Scenes/Exam/MarioScene.h"
 
 #pragma endregion
 
@@ -120,8 +120,8 @@ void MainGame::Initialize()
 
 #ifdef W7
 	//SceneManager::Get()->AddGameScene(new FontTestScene());
-	 SceneManager::Get()->AddGameScene(new PickingScene());
-	//SceneManager::Get()->AddGameScene(new CharacterScene());
+	//SceneManager::Get()->AddGameScene(new PickingScene());
+	SceneManager::Get()->AddGameScene(new CharacterScene());
 #endif
 
 #ifdef W8
@@ -156,7 +156,7 @@ void MainGame::Initialize()
 #endif
 
 
-	//SceneManager::Get()->AddGameScene(new MarioScene());
+	SceneManager::Get()->AddGameScene(new MarioScene());
 }
 
 LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam, LPARAM lParam)
