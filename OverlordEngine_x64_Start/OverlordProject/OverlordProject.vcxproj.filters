@@ -30,6 +30,9 @@
     <ClCompile Include="Scenes\Exam\MarioScene.cpp" />
     <ClCompile Include="Materials\EntityMaterial.cpp" />
     <ClCompile Include="Prefabs\Character.cpp" />
+    <ClCompile Include="Scenes\Week 8\ShadowMappingScene.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -60,5 +63,8 @@
     <ClInclude Include="Scenes\Exam\MarioScene.h" />
     <ClInclude Include="Materials\EntityMaterial.h" />
     <ClInclude Include="Prefabs\Character.h" />
+    <ClInclude Include="Scenes\Week 8\ShadowMappingScene.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
   </ItemGroup>
 </Project>
