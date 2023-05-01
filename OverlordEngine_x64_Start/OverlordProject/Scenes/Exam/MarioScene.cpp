@@ -12,6 +12,9 @@ void MarioScene::Initialize()
 
 	const auto pEntityTest = MaterialManager::Get()->CreateMaterial<EntityMaterial>();
 
+	pEntityTest->SetDiffuseTexture(L"Textures\\Mario\\Mario\\MarioDiffuse.png");
+	pEntityTest->SetOpacityTexture(L"Textures\\Mario\\Mario\\MarioOpacity.png");
+
 	const auto pObject = AddChild(new GameObject);
 	const auto pModel = pObject->AddComponent(new ModelComponent(L"Meshes/Mario/MarioModel/Mario.ovm"));
 	pModel->SetMaterial(pEntityTest);
