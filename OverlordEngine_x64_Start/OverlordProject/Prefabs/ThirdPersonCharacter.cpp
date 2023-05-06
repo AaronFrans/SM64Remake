@@ -1,13 +1,13 @@
 #include "stdafx.h"
-#include "Character.h"
+#include "ThirdPersonCharacter.h"
 
-Character::Character(const CharacterDesc& characterDesc) :
+ThirdPersonCharacter::ThirdPersonCharacter(const CharacterDesc& characterDesc) :
 	m_CharacterDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
 	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime)
 {}
 
-void Character::Initialize(const SceneContext& /*sceneContext*/)
+void ThirdPersonCharacter::Initialize(const SceneContext& /*sceneContext*/)
 {
 	//Controller
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_CharacterDesc.controller));
@@ -17,10 +17,10 @@ void Character::Initialize(const SceneContext& /*sceneContext*/)
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true); //Uncomment to make this camera the active camera
 
-	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, 0.f);
+	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, -1.5f);
 }
 
-void Character::Update(const SceneContext& sceneContext)
+void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 {
 	if (m_pCameraComponent->IsActive())
 	{
@@ -163,7 +163,7 @@ void Character::Update(const SceneContext& sceneContext)
 	}
 }
 
-void Character::DrawImGui()
+void ThirdPersonCharacter::DrawImGui()
 {
 	if (ImGui::CollapsingHeader("Character"))
 	{
