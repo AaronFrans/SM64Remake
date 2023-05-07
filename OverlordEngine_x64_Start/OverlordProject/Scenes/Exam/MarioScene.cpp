@@ -127,23 +127,23 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 
 
 	//Water
-	//auto pWaterMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	//pWaterMat->SetDiffuseTexture(L"Textures/Mario/Castle/Water.png");
-	//pWaterMat->SetUseNormalMaps(false);
-	//pWaterMat->SetUseSpecularTexture(false);
-	//pWaterMat->SetOpacityIntensity(0.75f);
-	//
-	//const auto pWater = pCastleRoot->AddChild(new GameObject());
-	//const auto pWaterModel = pWater->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Water.ovm"));
-	//pWater->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
-	//
-	//
-	//const auto pWaterMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Water.ovpt");
-	//
-	//auto pWaterRB = pWater->AddComponent(new RigidBodyComponent(true));
-	//pWaterRB->AddCollider(PxTriangleMeshGeometry{ pWaterMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
-	//
-	//pWaterModel->SetMaterial(pWaterMat);
+	auto pWaterMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
+	pWaterMat->SetDiffuseTexture(L"Textures/Mario/Castle/Water.png");
+	pWaterMat->SetUseNormalMaps(false);
+	pWaterMat->SetUseSpecularTexture(false);
+	pWaterMat->SetOpacityIntensity(0.75f);
+	
+	const auto pWater = pCastleRoot->AddChild(new GameObject());
+	const auto pWaterModel = pWater->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Water.ovm"));
+	pWater->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
+	
+	
+	const auto pWaterMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Water.ovpt");
+	
+	auto pWaterRB = pWater->AddComponent(new RigidBodyComponent(true));
+	pWaterRB->AddCollider(PxTriangleMeshGeometry{ pWaterMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	
+	pWaterModel->SetMaterial(pWaterMat);
 
 
 	//Sand
