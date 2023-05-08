@@ -385,12 +385,6 @@ float3 CalculateDiffuse(float3 normal, float2 texCoord)
 
 float3 CalculateFresnelFalloff(float3 normal, float3 viewDirection, float3 environmentColor)
 {
-	//gUseFresnelFalloff
-	//gFresnelPower
-	//gFresnelHarness
-	//gFresnelMultiplier
-	//gUseTextureEnvironment
-	//gColorFresnel
 	float3 fresnelFalloff = gUseEnvironmentMapping * environmentColor;
 	
 	if(gUseFresnelFalloff)
@@ -426,9 +420,6 @@ float3 CalculateEnvironment(float3 viewDirection, float3 normal)
 
 float CalculateOpacity(float2 texCoord)
 {
-	//gOpacityIntensity
-	//gUseTextureOpacity
-	//gTextureSampler
 	float opacity = gOpacityIntensity;
 	if(gTextureOpacityIntensity)
 	{
@@ -454,6 +445,10 @@ VS_Output MainVS(VS_Input input) {
 
 // The main pixel shader
 float4 MainPS(VS_Output input) : SV_TARGET {
+	//OPACITY
+	float opacity = CalculateOpacity(input.TexCoord);
+	clip(opacity - 0.1f);
+
 	// NORMALIZE
 	input.Normal = normalize(input.Normal);
 	input.Tangent = normalize(input.Tangent);
@@ -481,16 +476,14 @@ float4 MainPS(VS_Output input) : SV_TARGET {
 	//FINAL COLOR CALCULATION
 	float3 finalColor = diffColor + specColor + environmentColor + ambientColor;
 	
-	//OPACITY
-	float opacity = CalculateOpacity(input.TexCoord);
+
 	
-	return float4(finalColor,opacity);
+	return float4(finalColor, opacity);
 }
 
 // Default Technique
 technique10 WithAlphaBlending {
 	pass p0 {
-		SetRasterizerState(gRS_FrontCulling);
 		SetBlendState(gBS_EnableBlending,float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
 		SetVertexShader(CompileShader(vs_4_0, MainVS()));
 		SetGeometryShader( NULL );

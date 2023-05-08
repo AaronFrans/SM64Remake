@@ -170,6 +170,9 @@ void UberMaterial::SetUseSpecularPhong(const bool useSpecularPhong)
 
 void UberMaterial::InitializeEffectVariables()
 {
+
+	SetTechnique(L"WithAlphaBlending");
+
 	//Ligth
 	SetVariable_Vector(L"gLightDirection", { 0.577f, 0.577f, -0.577f });
 

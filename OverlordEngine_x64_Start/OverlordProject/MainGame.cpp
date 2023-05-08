@@ -156,7 +156,7 @@ void MainGame::Initialize()
 #endif
 
 
-	//SceneManager::Get()->AddGameScene(new MarioScene());
+	SceneManager::Get()->AddGameScene(new MarioScene());
 }
 
 LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam, LPARAM lParam)

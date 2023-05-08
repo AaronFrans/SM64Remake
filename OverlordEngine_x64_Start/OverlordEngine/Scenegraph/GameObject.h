@@ -10,7 +10,7 @@ enum class PxTriggerAction
 class GameObject
 {
 public:
-	typedef std::function<void (GameObject* pTriggerObject, GameObject* pOtherObject, PxTriggerAction action)> PhysicsCallback;
+	typedef std::function<void(GameObject* pTriggerObject, GameObject* pOtherObject, PxTriggerAction action)> PhysicsCallback;
 
 	GameObject();
 	virtual ~GameObject();
@@ -21,7 +21,7 @@ public:
 
 	template<typename T>
 	std::enable_if_t<std::is_base_of_v<GameObject, T>, T*>
-	AddChild(T* pObject)
+		AddChild(T* pObject)
 	{
 		AddChild_(pObject);
 		return pObject;
@@ -30,7 +30,7 @@ public:
 
 	template<typename T>
 	std::enable_if_t<std::is_base_of_v<BaseComponent, T>, T*>
-	AddComponent(T* pComp)
+		AddComponent(T* pComp)
 	{
 		AddComponent_(pComp);
 		return pComp;
@@ -132,14 +132,14 @@ public:
 
 protected:
 	virtual void Initialize(const SceneContext&) {};
-	virtual void PostInitialize(const SceneContext& ) {}
+	virtual void PostInitialize(const SceneContext&) {}
 	virtual void Draw(const SceneContext&) {}
 	virtual void PostDraw(const SceneContext&) {}
 	virtual void Update(const SceneContext&) {}
 	virtual void OnParentAttach(GameObject* /*pParent*/) {}
 	virtual void OnParentDetach(GameObject* /*pPreviousParent*/) {}
-	virtual void OnSceneAttach(GameScene* /*pScene*/){}
-	virtual void OnSceneDetach(GameScene* /*pScene*/){}
+	virtual void OnSceneAttach(GameScene* /*pScene*/) {}
+	virtual void OnSceneDetach(GameScene* /*pScene*/) {}
 
 private:
 	friend class GameScene; //Handles private interface

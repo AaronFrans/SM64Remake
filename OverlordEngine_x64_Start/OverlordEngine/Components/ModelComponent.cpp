@@ -59,6 +59,18 @@ void ModelComponent::Update(const SceneContext& sceneContext)
 
 void ModelComponent::Draw(const SceneContext& sceneContext)
 {
+	if (!m_DrawPost)
+		InnerDraw(sceneContext);
+}
+
+void ModelComponent::PostDraw(const SceneContext& sceneContext)
+{
+	if (m_DrawPost)
+		InnerDraw(sceneContext);
+}
+
+void ModelComponent::InnerDraw(const SceneContext& sceneContext)
+{
 	if (!m_pDefaultMaterial)
 	{
 		Logger::LogWarning(L"ModelComponent::Draw() > No Default Material Set!");

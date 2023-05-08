@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameScene.h"
 
-GameScene::GameScene(std::wstring sceneName):
+GameScene::GameScene(std::wstring sceneName) :
 	m_SceneName(std::move(sceneName))
 {
 }
@@ -64,7 +64,7 @@ void GameScene::RemoveChild(GameObject* pObject, bool deleteObject)
 	if (deleteObject)
 	{
 		SafeDelete(pObject);
-	}		
+	}
 }
 
 void GameScene::RootInitialize(const GameContext& gameContext)
@@ -177,7 +177,7 @@ void GameScene::RootDraw()
 	//Object-Scene Draw
 	for (const auto pChild : m_pChildren)
 	{
-		pChild->RootDraw(m_SceneContext);
+			pChild->RootDraw(m_SceneContext);
 	}
 
 	//SpriteRenderer Draw
@@ -200,30 +200,31 @@ void GameScene::RootDraw()
 	DebugRenderer::Draw(m_SceneContext);
 #pragma endregion
 
+
 #pragma region POST-PROCESSING PASS
 	//POST-PROCESSING_PASS
 	//++++++++++++++++++++
 
 	TODO_W10(L"Add Post-Processing PASS logic")
 
-	//No need to swap RenderTargets is there aren't any PP Effects...
-	if (m_PostProcessingMaterials.size() > 0)
-	{
-		//1. [PREV_RT & INIT_RT] Retrieve the current RenderTarget (OverlordGame::GetRenderTarget, every scene has access to the OverlordGame > m_pGame)
+		//No need to swap RenderTargets is there aren't any PP Effects...
+		if (m_PostProcessingMaterials.size() > 0)
+		{
+			//1. [PREV_RT & INIT_RT] Retrieve the current RenderTarget (OverlordGame::GetRenderTarget, every scene has access to the OverlordGame > m_pGame)
 
-		//2. Iterate the vector of PostProcessingMaterials (m_PostProcessingMaterials)
-		//		For Each Material
-		//			- If the material is disabled, skip
-		//			- Call the Draw function, the Source RenderTarget is our PREV_RT
-		//			- After drawing the effect, we want to swap PREV_RT with output from material we just used to draw with
+			//2. Iterate the vector of PostProcessingMaterials (m_PostProcessingMaterials)
+			//		For Each Material
+			//			- If the material is disabled, skip
+			//			- Call the Draw function, the Source RenderTarget is our PREV_RT
+			//			- After drawing the effect, we want to swap PREV_RT with output from material we just used to draw with
 
-		//3. All Materials are applied after each other, time to draw the final result to the screen
-		//		- If PREV_RT is still equal to INIT_RT, do nothing (means no PP effect was applied, nothing has changed)
-		//		- Else, reset the RenderTarget of the game to default (OverlordGame::SetRenderTarget)
-		//		- Use SpriteRenderer::DrawImmediate to render the ShaderResourceView from PREV_RT to the screen
+			//3. All Materials are applied after each other, time to draw the final result to the screen
+			//		- If PREV_RT is still equal to INIT_RT, do nothing (means no PP effect was applied, nothing has changed)
+			//		- Else, reset the RenderTarget of the game to default (OverlordGame::SetRenderTarget)
+			//		- Use SpriteRenderer::DrawImmediate to render the ShaderResourceView from PREV_RT to the screen
 
-		//Done!
-	}
+			//Done!
+		}
 #pragma endregion
 }
 
@@ -379,7 +380,7 @@ void GameScene::RemovePostProcessingEffect(PostProcessingMaterial* pMaterial)
 	if (std::ranges::find(m_PostProcessingMaterials, pMaterial) != m_PostProcessingMaterials.end())
 		m_PostProcessingMaterials.erase(std::ranges::remove(m_PostProcessingMaterials, pMaterial).begin());
 }
- 
+
 void GameScene::SetActiveCamera(CameraComponent* pCameraComponent)
 {
 	//Prevent recursion!

@@ -34,6 +34,7 @@
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
     <ClCompile Include="Prefabs\ThirdPersonCharacter.cpp" />
+    <ClCompile Include="Prefabs\Door.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -68,5 +69,6 @@
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
     <ClInclude Include="Prefabs\ThirdPersonCharacter.h" />
+    <ClInclude Include="Prefabs\Door.h" />
   </ItemGroup>
 </Project>

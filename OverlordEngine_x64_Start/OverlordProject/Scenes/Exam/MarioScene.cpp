@@ -5,6 +5,7 @@
 #include "Materials/EntityMaterial.h"
 #include "Materials/UberMaterial.h"
 #include "Materials/ColorMaterial.h"
+#include "Prefabs/Door.h"
 
 void MarioScene::Initialize()
 {
@@ -21,6 +22,9 @@ void MarioScene::Initialize()
 
 	//Level
 	MakeLevel(pMat);
+
+	auto door = AddChild(new Door(pMat));
+	door->GetTransform()->Translate(0, 10, 0);
 
 	//pModel->SetMaterial(pEntityTest);
 
@@ -76,7 +80,7 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 	//pModel->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
 	pObject->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
 
-	pObject->GetTransform()->Translate(0.f, 5.f, 0.f);
+	pObject->GetTransform()->Translate(0, 5, 0);
 
 }
 
@@ -86,7 +90,6 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 
 	const auto pCastleRoot = AddChild(new GameObject());
 	auto pRootTransform = pCastleRoot->GetTransform();
-	pRootTransform->Translate(0, 0.25f, 0);
 
 	//Grass 1
 	auto pGrass1Mat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
@@ -132,19 +135,22 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	pWaterMat->SetUseNormalMaps(false);
 	pWaterMat->SetUseSpecularTexture(false);
 	pWaterMat->SetOpacityIntensity(0.75f);
-	
+
 	const auto pWater = pCastleRoot->AddChild(new GameObject());
+
 	const auto pWaterModel = pWater->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Water.ovm"));
 	pWater->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
-	
-	
-	const auto pWaterMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Water.ovpt");
-	
-	auto pWaterRB = pWater->AddComponent(new RigidBodyComponent(true));
-	pWaterRB->AddCollider(PxTriangleMeshGeometry{ pWaterMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
-	
-	pWaterModel->SetMaterial(pWaterMat);
 
+
+	//const auto pWaterMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Water.ovpt");
+	//
+	//auto pWaterRB = pWater->AddComponent(new RigidBodyComponent(true));
+	//pWaterRB->AddCollider(PxTriangleMeshGeometry{ pWaterMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+
+	pWaterModel->SetMaterial(pWaterMat);
+	pWaterModel->DrawPost(true);
+
+	m_pDebugMat = pWaterMat;
 
 	//Sand
 	auto pSandMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
@@ -222,8 +228,6 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	pFencesModel->SetMaterial(pFencesMat);
 
 
-	m_pDebugMat = pFencesMat;
-
 	//Grates
 	auto pGratesMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
 	pGratesMat->SetDiffuseTexture(L"Textures/Mario/Castle/Grates.png");
@@ -262,8 +266,6 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 
 	pRocksModel->SetMaterial(pRocksMat);
 
-
-	m_pDebugMat = pRocksMat;
 
 	//RocksUnderWater
 	auto pRocksUnderWaterMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
@@ -472,7 +474,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pBridgeTopMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/BridgeTop.ovpt");
 
 	auto pBridgeTopRB = pBridgeTop->AddComponent(new RigidBodyComponent(true));
-	pBridgeTopRB->AddCollider(PxTriangleMeshGeometry{ pBridgeTopMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, * pPhysicsMaterial);
+	pBridgeTopRB->AddCollider(PxTriangleMeshGeometry{ pBridgeTopMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
 
 	pBridgeTopModel->SetMaterial(pBridgeTopMat);
 
@@ -490,7 +492,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pBridgeSideMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/BridgeSide.ovpt");
 
 	auto pBridgeSideRB = pBridgeSide->AddComponent(new RigidBodyComponent(true));
-	pBridgeSideRB->AddCollider(PxTriangleMeshGeometry{ pBridgeSideMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, * pPhysicsMaterial);
+	pBridgeSideRB->AddCollider(PxTriangleMeshGeometry{ pBridgeSideMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
 
 	pBridgeSideModel->SetMaterial(pBridgeSideMat);
 
@@ -511,7 +513,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pPeachTopMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/PeachTop.ovpt");
 
 	auto pPeachTopRB = pPeachTop->AddComponent(new RigidBodyComponent(true));
-	pPeachTopRB->AddCollider(PxTriangleMeshGeometry{ pPeachTopMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, * pPhysicsMaterial);
+	pPeachTopRB->AddCollider(PxTriangleMeshGeometry{ pPeachTopMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
 
 	pPeachTopModel->SetMaterial(pPeachTopMat);
 
@@ -532,9 +534,10 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pPeachBottomMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/PeachBottom.ovpt");
 
 	auto pPeachBottomRB = pPeachBottom->AddComponent(new RigidBodyComponent(true));
-	pPeachBottomRB->AddCollider(PxTriangleMeshGeometry{ pPeachBottomMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, * pPhysicsMaterial);
+	pPeachBottomRB->AddCollider(PxTriangleMeshGeometry{ pPeachBottomMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
 
 	pPeachBottomModel->SetMaterial(pPeachBottomMat);
 
-	//m_pDebugMat = pWaterMat;
+
+	pRootTransform->Translate(0, 0.25f, 0);
 }

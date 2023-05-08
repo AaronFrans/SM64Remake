@@ -7,7 +7,7 @@ class ModelAnimator;
 class ModelComponent : public BaseComponent
 {
 public:
-	ModelComponent(const std::wstring&  assetFile, bool castShadows = true);
+	ModelComponent(const std::wstring& assetFile, bool castShadows = true);
 	~ModelComponent() override;
 
 	ModelComponent(const ModelComponent& other) = delete;
@@ -21,10 +21,19 @@ public:
 	ModelAnimator* GetAnimator() const { return m_pAnimator; }
 	bool HasAnimator() const { return m_pAnimator != nullptr; }
 
+	void DrawPost(bool value) { 
+		m_DrawPost = value; 
+		m_enablePostDraw = value;
+	};
+
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
 	void Update(const SceneContext&) override;
 	void Draw(const SceneContext& sceneContext) override;
+	void PostDraw(const SceneContext& sceneContext) override;
+
+
+	void InnerDraw(const SceneContext& sceneContext);
 
 	void ShadowMapDraw(const SceneContext& sceneContext) override; //update_W9
 
@@ -41,4 +50,6 @@ private:
 
 	//W9
 	bool m_CastShadows{ true };
+
+	bool m_DrawPost{ false };
 };

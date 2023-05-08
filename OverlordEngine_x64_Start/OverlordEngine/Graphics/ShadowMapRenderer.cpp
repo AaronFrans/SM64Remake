@@ -13,18 +13,18 @@ void ShadowMapRenderer::Initialize()
 
 	//	- RenderTargets are initialized with the RenderTarget::Create function, requiring a RENDERTARGET_DESC
 	//	- Initialize the relevant fields of the RENDERTARGET_DESC (enableColorBuffer:false, enableDepthSRV:true, width & height)
-	RENDERTARGET_DESC rendrerTargDesc{};
+	RENDERTARGET_DESC renderTargDesc{};
 
-	rendrerTargDesc.enableColorBuffer = false;
-	rendrerTargDesc.enableDepthSRV = true;
+	renderTargDesc.enableColorBuffer = false;
+	renderTargDesc.enableDepthSRV = true;
 
 	constexpr UINT width{ 1280 }, height{ 720 };
-	rendrerTargDesc.width = width;
-	rendrerTargDesc.height = height;
+	renderTargDesc.width = width;
+	renderTargDesc.height = height;
 
 	m_pShadowRenderTarget = new RenderTarget(m_GameContext.d3dContext);
 
-	m_pShadowRenderTarget->Create(rendrerTargDesc);
+	m_pShadowRenderTarget->Create(renderTargDesc);
 
 	//2. Create a new ShadowMapMaterial, this will be the material that 'generated' the ShadowMap, store in m_pShadowMapGenerator
 	//	- The effect has two techniques, one for static meshes, and another for skinned meshes (both very similar, the skinned version also transforms the vertices based on a given set of boneTransforms)
