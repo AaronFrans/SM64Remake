@@ -17,7 +17,7 @@ void Character::Initialize(const SceneContext& /*sceneContext*/)
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true); //Uncomment to make this camera the active camera
 
-	pCamera->GetTransform()->Translate(0.f, m_CharacterDesc.controller.height * .5f, 0.f);
+	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, 0.f);
 }
 
 void Character::Update(const SceneContext& sceneContext)
@@ -96,7 +96,7 @@ void Character::Update(const SceneContext& sceneContext)
 		{
 			//Calculate & Store the current direction (m_CurrentDirection) >> based on the forward/right vectors and the pressed input
 
-			XMStoreFloat3(&m_CurrentDirection, { forward * move.y + right * move.x});
+			XMStoreFloat3(&m_CurrentDirection, { forward * move.y + right * move.x });
 			//Increase the current MoveSpeed with the current Acceleration (m_MoveSpeed)
 			//Make sure the current MoveSpeed stays below the maximum MoveSpeed (CharacterDesc::maxMoveSpeed)
 			m_MoveSpeed = std::min(m_MoveSpeed + curMoveAccel, m_CharacterDesc.maxMoveSpeed);

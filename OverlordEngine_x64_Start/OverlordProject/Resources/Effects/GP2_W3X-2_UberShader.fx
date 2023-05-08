@@ -267,6 +267,13 @@ bool gUseSpecularPhong
 	string UIWidget = "Bool";
 > = false;
 
+bool gUseLight
+<
+	string UIName = "Use Light";
+	string UIWidget = "Bool";
+> = false;
+
+
 //VS IN & OUT
 //***********
 struct VS_Input
@@ -362,7 +369,11 @@ float3 CalculateNormal(float3 tangent, float3 normal, float2 texCoord)
 
 float3 CalculateDiffuse(float3 normal, float2 texCoord)
 {
-	float diffuseStrength = saturate(dot(gLightDirection, normal));
+	float diffuseStrength = 1;
+	if(gUseLight)
+	{
+		float diffuseStrength = saturate(dot(gLightDirection, normal));
+	}
 
 	float3 diffColor = gColorDiffuse * diffuseStrength;
 

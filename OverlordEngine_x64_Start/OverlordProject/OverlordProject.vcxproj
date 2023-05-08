@@ -93,8 +93,11 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
     <ClCompile Include="Prefabs\Character.cpp" />
     <ClCompile Include="Materials\EntityMaterial.cpp" />
+    <ClCompile Include="Prefabs\ThirdPersonCharacter.cpp" />
     <ClCompile Include="Scenes\Exam\MarioScene.cpp" />
     <ClCompile Include="Scenes\Week 7\CharacterScene.cpp" />
     <ClCompile Include="Scenes\Week 7\FontTestScene.cpp" />
@@ -117,6 +120,7 @@
     <ClCompile Include="Scenes\Week 5\SoftwareSkinningScene_2.cpp" />
     <ClCompile Include="Scenes\Week 5\SoftwareSkinningScene_3.cpp" />
     <ClCompile Include="Scenes\Week 7\PickingScene.cpp" />
+    <ClCompile Include="Scenes\Week 8\ShadowMappingScene.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
@@ -141,8 +145,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
     <ClInclude Include="Prefabs\Character.h" />
     <ClInclude Include="Materials\EntityMaterial.h" />
+    <ClInclude Include="Prefabs\ThirdPersonCharacter.h" />
     <ClInclude Include="Scenes\Exam\MarioScene.h" />
     <ClInclude Include="Scenes\Week 7\CharacterScene.h" />
     <ClInclude Include="Scenes\Week 7\FontTestScene.h" />
@@ -165,6 +172,7 @@
     <ClInclude Include="Scenes\Week 5\SoftwareSkinningScene_2.h" />
     <ClInclude Include="Scenes\Week 5\SoftwareSkinningScene_3.h" />
     <ClInclude Include="Scenes\Week 7\PickingScene.h" />
+    <ClInclude Include="Scenes\Week 8\ShadowMappingScene.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="Materials\UberMaterial.h" />

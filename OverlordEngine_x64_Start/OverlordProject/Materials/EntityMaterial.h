@@ -12,8 +12,14 @@ public:
 	EntityMaterial& operator=(EntityMaterial&& other) noexcept = delete;
 
 
+	void SetDiffuseTexture(const std::wstring& assetFile);
+
+	void SetOpacityTexture(const std::wstring& assetFile);
+
 protected:
 	void InitializeEffectVariables() override;
 
 private:
+	TextureData* m_pDiffuseTexture{ nullptr };
+	TextureData* m_pOpacityTexture{ nullptr };
 };

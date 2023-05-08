@@ -1,4 +1,7 @@
 #pragma once
+
+
+class UberMaterial;
 class MarioScene : public GameScene
 {
 public:
@@ -22,5 +25,15 @@ private:
 		CharacterMoveBackward,
 		CharacterJump
 	};
-	
+
+	void MakeMario(physx::PxMaterial* physicsMaterial);
+
+
+	void MakeLevel(physx::PxMaterial* physicsMaterial);
+
+
+	//Current Material Being Debugged
+	UberMaterial* m_pDebugMat{};
+
+	const PxVec3 CorrectScale{ 20,20,20 };
 };
