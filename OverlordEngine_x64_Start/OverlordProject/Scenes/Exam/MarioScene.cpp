@@ -74,11 +74,14 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 
 	const auto pObject = AddChild(new ThirdPersonCharacter(characterDesc));
 
-	const auto pModel = pObject->AddComponent(new ModelComponent(L"Meshes/Mario/MarioModel/Mario.ovm"));
+	const auto pModelObject = pObject->AddChild(new GameObject());
+
+	const auto pModel = pModelObject->AddComponent(new ModelComponent(L"Meshes/Mario/MarioModel/Mario.ovm"));
 	pModel->SetMaterial(pMarioMat);
 
 	//pModel->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
-	pObject->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
+	pModelObject->GetTransform()->Scale({ 0.5, 0.5, 0.5 });
+	pModelObject->GetTransform()->Rotate(-90, 0, 0 );
 
 	pObject->GetTransform()->Translate(0, 5, 0);
 

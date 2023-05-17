@@ -21,7 +21,7 @@ void HardwareSkinningScene::Initialize()
 	pSkinnedMaterial->SetDiffuseTexture(L"Textures/PeasantGirl_Diffuse.png");
 
 	const auto pObject = AddChild(new GameObject);
-	const auto pModel = pObject->AddComponent(new ModelComponent(L"Meshes/PeasantGirl.ovm"));
+	const auto pModel = pObject->AddComponent(new ModelComponent(L"Meshes/Mario/MarioModel/Mario.ovm"));
 	pModel->SetMaterial(pSkinnedMaterial);
 
 	pObject->GetTransform()->Scale(0.15f);
