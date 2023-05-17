@@ -35,6 +35,7 @@
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
     <ClCompile Include="Prefabs\ThirdPersonCharacter.cpp" />
     <ClCompile Include="Prefabs\Door.cpp" />
+    <ClCompile Include="Scenes\Week 9\ParticleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -70,5 +71,6 @@
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
     <ClInclude Include="Prefabs\ThirdPersonCharacter.h" />
     <ClInclude Include="Prefabs\Door.h" />
+    <ClInclude Include="Scenes\Week 9\ParticleScene.h" />
   </ItemGroup>
 </Project>
