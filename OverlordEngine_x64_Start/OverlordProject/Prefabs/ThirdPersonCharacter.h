@@ -3,8 +3,8 @@ struct CharacterDesc
 {
 	CharacterDesc(
 		PxMaterial* pMaterial,
-		float radius = 0.5f,
-		float height = 1)
+		float radius = 1,
+		float height = 2.2f)
 	{
 		controller.setToDefault();
 		controller.radius = radius;
@@ -13,12 +13,12 @@ struct CharacterDesc
 	}
 
 	float maxMoveSpeed{ 15.f };
-	float maxFallSpeed{ 15.f };
+	float maxFallSpeed{ 30.f };
 
-	float JumpSpeed{ 15.f };
+	float JumpSpeed{ 50.f };
 
 	float moveAccelerationTime{ .3f };
-	float fallAccelerationTime{ .3f };
+	float fallAccelerationTime{ 0.2f };
 
 	PxCapsuleControllerDesc controller{};
 
@@ -44,6 +44,12 @@ public:
 
 	void DrawImGui();
 
+	void SetMinCameraAngle(float angle);
+	void SetMaxCameraAngle(float angle);
+
+	void SetModel(ModelComponent* modelComponent);
+	void SetAnimator(ModelAnimator* modelAnimator);
+
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
@@ -51,6 +57,9 @@ protected:
 private:
 	CameraComponent* m_pCameraComponent{};
 	ControllerComponent* m_pControllerComponent{};
+
+	ModelComponent* m_pModelComponent{};
+	ModelAnimator* m_pModelAnimator{};
 
 	CharacterDesc m_CharacterDesc;
 	float m_TotalPitch{}, m_TotalYaw{};				//Total camera Pitch(X) and Yaw(Y) rotation
@@ -60,5 +69,10 @@ private:
 
 	XMFLOAT3 m_TotalVelocity{};						//TotalVelocity with X/Z for Horizontal Movement AND Y for Vertical Movement (fall/jump)
 	XMFLOAT3 m_CurrentDirection{};					//Current/Last Direction based on Camera forward/right (Stored for deacceleration)
+
+
+
+	float m_MinCameraAngle{ 30 };
+	float m_MaxCameraAngle{ 70 };
 };
 

@@ -177,7 +177,7 @@ void GameScene::RootDraw()
 	//Object-Scene Draw
 	for (const auto pChild : m_pChildren)
 	{
-			pChild->RootDraw(m_SceneContext);
+		pChild->RootDraw(m_SceneContext);
 	}
 
 	//SpriteRenderer Draw
@@ -205,26 +205,40 @@ void GameScene::RootDraw()
 	//POST-PROCESSING_PASS
 	//++++++++++++++++++++
 
-	TODO_W10(L"Add Post-Processing PASS logic")
 
 		//No need to swap RenderTargets is there aren't any PP Effects...
-		if (m_PostProcessingMaterials.size() > 0)
+	if (m_PostProcessingMaterials.size() > 0)
+	{
+		//1. [PREV_RT & INIT_RT] Retrieve the current RenderTarget (OverlordGame::GetRenderTarget, every scene has access to the OverlordGame > m_pGame)
+		RenderTarget* pInitRenderTarget = m_pGame->GetRenderTarget();
+		RenderTarget* pPrevRenderTarget = pInitRenderTarget;
+		//2. Iterate the vector of PostProcessingMaterials (m_PostProcessingMaterials)
+		//		For Each Material
+		for (const auto material : m_PostProcessingMaterials)
 		{
-			//1. [PREV_RT & INIT_RT] Retrieve the current RenderTarget (OverlordGame::GetRenderTarget, every scene has access to the OverlordGame > m_pGame)
+			//	- If the material is disabled, skip
+			if (!material->IsEnabled())
+				continue;
 
-			//2. Iterate the vector of PostProcessingMaterials (m_PostProcessingMaterials)
-			//		For Each Material
-			//			- If the material is disabled, skip
-			//			- Call the Draw function, the Source RenderTarget is our PREV_RT
-			//			- After drawing the effect, we want to swap PREV_RT with output from material we just used to draw with
+			//	- Call the Draw function, the Source RenderTarget is our PREV_RT
+			material->Draw(m_SceneContext, pPrevRenderTarget);
+			//	- After drawing the effect, we want to swap PREV_RT with output from material we just used to draw with
+			pPrevRenderTarget = material->GetOutput();
 
-			//3. All Materials are applied after each other, time to draw the final result to the screen
-			//		- If PREV_RT is still equal to INIT_RT, do nothing (means no PP effect was applied, nothing has changed)
-			//		- Else, reset the RenderTarget of the game to default (OverlordGame::SetRenderTarget)
-			//		- Use SpriteRenderer::DrawImmediate to render the ShaderResourceView from PREV_RT to the screen
-
-			//Done!
 		}
+
+
+		//3. All Materials are applied after each other, time to draw the final result to the screen
+		// - If PREV_RT is still equal to INIT_RT, do nothing (means no PP effect was applied, nothing has changed)
+		if (pInitRenderTarget == pPrevRenderTarget)
+			return;
+
+		m_pGame->SetRenderTarget(pInitRenderTarget);
+		// - Use SpriteRenderer::DrawImmediate to render the ShaderResourceView from PREV_RT to the screen
+		SpriteRenderer::Get()->DrawImmediate(m_SceneContext.d3dContext, pPrevRenderTarget->GetColorShaderResourceView(), {});
+
+		//Done!
+	}
 #pragma endregion
 }
 

@@ -2,18 +2,18 @@
 #include "MainGame.h"
 
 /*LAB Content*/
-// #define W3
-// #define W4
-// #define W5
-// #define W6
-// #define W7
-// #define W8
- #define W9
-// #define W10
+//#define W3
+//#define W4
+//#define W5
+//#define W6
+//#define W7
+//#define W8
+//#define W9
+//#define W10
 
 /*MILESTONE Content*/
-// #define MILESTONE_1
-// #define MILESTONE_2
+//#define MILESTONE_1
+//#define MILESTONE_2
 
 #pragma region Lab/Milestone Includes
 #ifdef W3
@@ -162,13 +162,13 @@ void MainGame::Initialize()
 LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
-	if(message == WM_KEYUP)
+	if (message == WM_KEYUP)
 	{
 		if ((lParam & 0x80000000) != 0x80000000)
 			return -1;
 
 		//[F1] Toggle Scene Info Overlay
-		if(wParam == VK_F1)
+		if (wParam == VK_F1)
 		{
 			const auto pScene = SceneManager::Get()->GetActiveScene();
 			pScene->GetSceneSettings().Toggle_ShowInfoOverlay();
@@ -204,7 +204,7 @@ LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam
 			pScene->GetPhysxProxy()->NextPhysXFrame();
 		}
 	}
-	
+
 
 	return -1;
 }

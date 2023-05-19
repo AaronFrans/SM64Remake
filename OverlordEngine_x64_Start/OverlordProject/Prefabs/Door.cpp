@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Door.h"
-#include "Materials/EntityMaterial.h"
+#include "Materials/Mario/EntityMaterial.h"
 
 Door::Door(physx::PxMaterial* pPhysicsMaterial)
 	:m_pPhysicsMaterial{ pPhysicsMaterial }

@@ -17,7 +17,7 @@ void ThirdPersonCharacter::Initialize(const SceneContext& /*sceneContext*/)
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true); //Uncomment to make this camera the active camera
 
-	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, -1.5f);
+	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, -10);
 }
 
 void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
@@ -80,10 +80,16 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 
 		//Adjust the TotalYaw (m_TotalYaw) & TotalPitch (m_TotalPitch) based on the local 'look' variable
 		m_TotalYaw += look.x * m_CharacterDesc.rotationSpeed * elapsedTime;
-		m_TotalPitch += look.y * m_CharacterDesc.rotationSpeed * elapsedTime;
+		m_TotalPitch -= look.y * m_CharacterDesc.rotationSpeed * elapsedTime;
 		//Make sure this calculated on a framerate independent way and uses CharacterDesc::rotationSpeed.
 		//Rotate this character based on the TotalPitch (X) and TotalYaw (Y)
-		pTransform->GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
+
+
+		GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
+
+		m_pModelComponent->GetTransform()->Rotate(-m_TotalPitch, 180, 0);
+
+
 
 		//********
 		//MOVEMENT
@@ -100,6 +106,12 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 			//Increase the current MoveSpeed with the current Acceleration (m_MoveSpeed)
 			//Make sure the current MoveSpeed stays below the maximum MoveSpeed (CharacterDesc::maxMoveSpeed)
 			m_MoveSpeed = std::min(m_MoveSpeed + curMoveAccel, m_CharacterDesc.maxMoveSpeed);
+
+			if (m_TotalVelocity.y == 0)
+			{
+
+				m_pModelAnimator->SetAnimation(L"Running");
+			}
 
 		}
 		//Else (character is not moving, or stopped moving)
@@ -132,6 +144,7 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 		else if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Jump)) {
 			//Set m_TotalVelocity.y equal to CharacterDesc::JumpSpeed
 			m_TotalVelocity.y = m_CharacterDesc.JumpSpeed;
+			m_pModelAnimator->SetAnimation(L"Jumping");
 
 		}
 		//Else (=Character is grounded, no input pressed)
@@ -140,8 +153,14 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 
 			//m_TotalVelocity.y is zero
 			m_TotalVelocity.y = 0;
+
 		}
 
+
+		if (m_MoveSpeed == 0 && m_TotalVelocity.y == 0)
+		{
+			m_pModelAnimator->SetAnimation(L"Idle");
+		}
 
 
 		//************
@@ -201,4 +220,24 @@ void ThirdPersonCharacter::DrawImGui()
 			m_pCameraComponent->SetActive(isActive);
 		}
 	}
+}
+
+void ThirdPersonCharacter::SetMinCameraAngle(float angle)
+{
+	m_MinCameraAngle = angle;
+}
+
+void ThirdPersonCharacter::SetMaxCameraAngle(float angle)
+{
+	m_MaxCameraAngle = angle;
+}
+
+void ThirdPersonCharacter::SetModel(ModelComponent* modelComponent)
+{
+	m_pModelComponent = modelComponent;
+}
+
+void ThirdPersonCharacter::SetAnimator(ModelAnimator* modelAnimator)
+{
+	m_pModelAnimator = modelAnimator;
 }

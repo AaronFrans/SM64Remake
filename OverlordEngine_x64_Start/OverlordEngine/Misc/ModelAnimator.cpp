@@ -113,6 +113,13 @@ void ModelAnimator::SetAnimation(const std::wstring& clipName)
 	//Set m_ClipSet to false
 	m_ClipSet = false;
 	//Iterate the m_AnimationClips vector and search for an AnimationClip with the given name (clipName)
+
+	if (m_CurrentClip.name == clipName)
+	{
+		m_ClipSet = true;
+		return;
+	}
+
 	for (auto& clip : m_pMeshFilter->GetAnimationClips())
 	{
 		//If found,

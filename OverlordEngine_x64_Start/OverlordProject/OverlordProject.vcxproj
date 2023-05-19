@@ -93,13 +93,17 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Materials\Mario\EntityMaterial_Skinned.cpp" />
+    <ClCompile Include="Materials\Post\PostGrayscale.cpp" />
+    <ClCompile Include="Materials\Post\PostBlur.cpp" />
     <ClCompile Include="Prefabs\Door.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
     <ClCompile Include="Prefabs\Character.cpp" />
-    <ClCompile Include="Materials\EntityMaterial.cpp" />
+    <ClCompile Include="Materials\Mario\EntityMaterial.cpp" />
     <ClCompile Include="Prefabs\ThirdPersonCharacter.cpp" />
     <ClCompile Include="Scenes\Exam\MarioScene.cpp" />
+    <ClCompile Include="Scenes\Week 10\PostProcessingScene.cpp" />
     <ClCompile Include="Scenes\Week 7\CharacterScene.cpp" />
     <ClCompile Include="Scenes\Week 7\FontTestScene.cpp" />
     <ClCompile Include="Materials\DiffuseMaterial_Skinned.cpp" />
@@ -147,13 +151,17 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Materials\Mario\EntityMaterial_Skinned.h" />
+    <ClInclude Include="Materials\Post\PostGrayscale.h" />
+    <ClInclude Include="Materials\Post\PostBlur.h" />
     <ClInclude Include="Prefabs\Door.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
     <ClInclude Include="Prefabs\Character.h" />
-    <ClInclude Include="Materials\EntityMaterial.h" />
+    <ClInclude Include="Materials\Mario\EntityMaterial.h" />
     <ClInclude Include="Prefabs\ThirdPersonCharacter.h" />
     <ClInclude Include="Scenes\Exam\MarioScene.h" />
+    <ClInclude Include="Scenes\Week 10\PostProcessingScene.h" />
     <ClInclude Include="Scenes\Week 7\CharacterScene.h" />
     <ClInclude Include="Scenes\Week 7\FontTestScene.h" />
     <ClInclude Include="Materials\DiffuseMaterial_Skinned.h" />

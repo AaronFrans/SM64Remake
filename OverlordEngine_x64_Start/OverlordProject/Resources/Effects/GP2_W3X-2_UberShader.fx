@@ -445,6 +445,7 @@ VS_Output MainVS(VS_Input input) {
 
 // The main pixel shader
 float4 MainPS(VS_Output input) : SV_TARGET {
+	
 	//OPACITY
 	float opacity = CalculateOpacity(input.TexCoord);
 	clip(opacity - 0.1f);
@@ -494,7 +495,7 @@ technique10 WithAlphaBlending {
 // Default Technique
 technique10 WithoutAlphaBlending {
 	pass p0 {
-		SetRasterizerState(gRS_FrontCulling);
+		SetRasterizerState(NULL);
 		SetVertexShader(CompileShader(vs_4_0, MainVS()));
 		SetGeometryShader( NULL );
 		SetPixelShader(CompileShader(ps_4_0, MainPS()));

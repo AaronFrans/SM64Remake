@@ -2,10 +2,20 @@
 #include "MarioScene.h"
 #include "Prefabs/ThirdPersonCharacter.h"
 
-#include "Materials/EntityMaterial.h"
+#include "Materials/Mario/EntityMaterial_Skinned.h"
 #include "Materials/UberMaterial.h"
 #include "Materials/ColorMaterial.h"
 #include "Prefabs/Door.h"
+
+MarioScene::~MarioScene()
+{
+	for (UINT i{ 0 }; i < m_ClipCount; ++i)
+	{
+		delete[] m_ClipNames[i];
+	}
+
+	delete[] m_ClipNames;
+}
 
 void MarioScene::Initialize()
 {
@@ -18,15 +28,23 @@ void MarioScene::Initialize()
 	//Mario
 	MakeMario(pMat);
 
+	//Bubbles
+	MakeBubbleEmitter(162, -49, -121);
 
 
 	//Level
 	MakeLevel(pMat);
+	//
+	//
 
 	auto door = AddChild(new Door(pMat));
-	door->GetTransform()->Translate(0, 10, 0);
+	door->GetTransform()->Translate(52.514f, -12.258f, -146.816f);
+	door->GetTransform()->Rotate(96, -50, -27.5f);
 
-	//pModel->SetMaterial(pEntityTest);
+	auto door2 = AddChild(new Door(pMat));
+	door2->GetTransform()->Translate(52.702f, -12.16f, -146.689f);
+	door2->GetTransform()->Rotate(115.9f, 161.1f, 9.3f);
+
 
 
 	//Input
@@ -54,13 +72,37 @@ void MarioScene::OnGUI()
 {
 	if (m_pDebugMat)
 		m_pDebugMat->DrawImGui();
+
+	if (PositionTemp)
+	{
+
+		auto curPos = PositionTemp->GetTransform()->GetWorldPosition();
+		float pos[3]{ curPos.x, curPos.y, curPos.z };
+
+		ImGui::DragFloat3("Translation", pos, 0.1f, -300, 300);
+		PositionTemp->GetTransform()->Translate(pos[0], pos[1], pos[2]);
+
+
+
+
+		ImGui::DragFloat4("Rotation", rot, 0.1f, -380, 380);
+		PositionTemp->GetTransform()->Rotate(rot[0], rot[1], rot[2], rot[4]);
+	}
+
+}
+
+void MarioScene::Update()
+{
+	std::cout << "Mario at: " << MarioTemp->GetTransform()->GetWorldPosition().x <<
+		", " << MarioTemp->GetTransform()->GetWorldPosition().y <<
+		", " << MarioTemp->GetTransform()->GetWorldPosition().z << '\n';
 }
 
 void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 {
 
 
-	const auto pMarioMat = MaterialManager::Get()->CreateMaterial<EntityMaterial>();
+	const auto pMarioMat = MaterialManager::Get()->CreateMaterial<EntityMaterial_Skinned>();
 
 	pMarioMat->SetDiffuseTexture(L"Textures/Mario/Mario/MarioDiffuse.png");
 	pMarioMat->SetOpacityTexture(L"Textures/Mario/Mario/MarioOpacity.png");
@@ -74,23 +116,70 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 
 	const auto pObject = AddChild(new ThirdPersonCharacter(characterDesc));
 
+	MarioTemp = pObject;
 	const auto pModelObject = pObject->AddChild(new GameObject());
 
 	const auto pModel = pModelObject->AddComponent(new ModelComponent(L"Meshes/Mario/MarioModel/Mario.ovm"));
+
+	pObject->SetModel(pModel);
+
 	pModel->SetMaterial(pMarioMat);
 
 	//pModel->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
-	pModelObject->GetTransform()->Scale({ 0.5, 0.5, 0.5 });
-	pModelObject->GetTransform()->Rotate(-90, 0, 0 );
+	pModelObject->GetTransform()->Scale({ MarioScale.x, MarioScale.y,MarioScale.z });
+	pModelObject->GetTransform()->Rotate(0, 180, 0);
+	pModelObject->GetTransform()->Translate(0, -2, 0);
 
 	pObject->GetTransform()->Translate(0, 5, 0);
 
+
+	m_pAnimator = pModel->GetAnimator();
+	pObject->SetAnimator(m_pAnimator);
+
+	m_pAnimator->SetAnimation(m_AnimationClipId);
+	m_pAnimator->SetAnimationSpeed(m_AnimationSpeed);
+
+	//Gather Clip Names
+	m_ClipCount = m_pAnimator->GetClipCount();
+	m_ClipNames = new char* [m_ClipCount];
+	for (UINT i{ 0 }; i < m_ClipCount; ++i)
+	{
+		auto clipName = StringUtil::utf8_encode(m_pAnimator->GetClip(static_cast<int>(i)).name);
+		const auto clipSize = clipName.size();
+		m_ClipNames[i] = new char[clipSize + 1];
+		strncpy_s(m_ClipNames[i], clipSize + 1, clipName.c_str(), clipSize);
+	}
+
+
+	m_pAnimator->SetAnimation(L"Idle");
+
+	m_pAnimator->Play();
+
+}
+
+void MarioScene::MakeBubbleEmitter(float x, float y, float z)
+{
+	ParticleEmitterSettings settings{};
+	settings.velocity = { 0,0,0 };
+	settings.minSize = 0.5f;
+	settings.maxSize = 1.1f;
+	settings.minEnergy = 1;
+	settings.maxEnergy = 1;
+	settings.minScale = 1;
+	settings.maxScale = 1.5f;
+	settings.minEmitterRadius = .2f;
+	settings.maxEmitterRadius = .5f;
+	settings.color = { 1.f, 1.f, 1.f, .6f };
+
+	const auto pObject = AddChild(new GameObject);
+	pObject->GetTransform()->Translate(x, y, z );
+	pObject->AddComponent(new ParticleEmitterComponent(L"Textures/Mario/Bubble/Bubble.png", settings, 10));
+
+	PositionTemp = pObject;
 }
 
 void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 {
-
-
 	const auto pCastleRoot = AddChild(new GameObject());
 	auto pRootTransform = pCastleRoot->GetTransform();
 

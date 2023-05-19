@@ -46,7 +46,7 @@ void HardwareSkinningScene::OnGUI()
 {
 	if (ImGui::Button(pAnimator->IsPlaying() ? "PAUSE" : "PLAY"))
 	{
-		if (pAnimator->IsPlaying())pAnimator->Pause();
+		if (pAnimator->IsPlaying()) pAnimator->Pause();
 		else pAnimator->Play();
 	}
 
