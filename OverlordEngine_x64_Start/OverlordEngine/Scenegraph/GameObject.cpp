@@ -8,6 +8,7 @@ GameObject::GameObject() :
 {
 	AddComponent(m_pTransform);
 }
+
 GameObject::~GameObject()
 {
 	for (BaseComponent* pComp : m_pComponents)
@@ -82,6 +83,7 @@ void GameObject::RootUpdate(const SceneContext& sceneContext)
 		pChild->RootUpdate(sceneContext);
 	}
 }
+
 void GameObject::RootDraw(const SceneContext& sceneContext)
 {
 	//User-Object Draw
@@ -99,6 +101,7 @@ void GameObject::RootDraw(const SceneContext& sceneContext)
 		pChild->RootDraw(sceneContext);
 	}
 }
+
 void GameObject::RootPostDraw(const SceneContext& sceneContext)
 {
 	//Post-Draw

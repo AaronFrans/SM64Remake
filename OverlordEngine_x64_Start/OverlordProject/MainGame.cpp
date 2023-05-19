@@ -5,7 +5,7 @@
 //#define W3
 //#define W4
 //#define W5
-//#define W6
+#define W6
 //#define W7
 //#define W8
 //#define W9
@@ -76,6 +76,7 @@
 #include "Scenes/Week 10/PostProcessingScene.h"
 #endif
 
+#include "Scenes/Exam/MainMenuScene.h"
 #include "Scenes/Exam/MarioScene.h"
 
 #pragma endregion
@@ -156,6 +157,7 @@ void MainGame::Initialize()
 #endif
 
 
+	SceneManager::Get()->AddGameScene(new MainMenuScene());
 	SceneManager::Get()->AddGameScene(new MarioScene());
 }
 

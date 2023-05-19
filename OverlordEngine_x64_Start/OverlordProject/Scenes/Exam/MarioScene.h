@@ -2,6 +2,7 @@
 
 
 class UberMaterial;
+class Coin;
 class MarioScene final : public GameScene
 {
 public:
@@ -32,20 +33,28 @@ private:
 
 	void MakeBubbleEmitter(float x, float y, float z);
 
+	void MakeCoin(float x, float y, float z, physx::PxMaterial* physicsMaterial);
 
 	void MakeLevel(physx::PxMaterial* physicsMaterial);
 
 
+	//Coins
+	std::vector<Coin*> m_Coins{};
+	float m_CoinsRotations{ 0 };
+
+	int m_NrCoins{};
+
 	//Current Material Being Debugged
 	UberMaterial* m_pDebugMat{};
 
-	GameObject* MarioTemp{};
+	GameObject* m_pMario{};
 	GameObject* PositionTemp{};
 
 	const PxVec3 CorrectScale{ 20,20,20 };
 	const PxVec3 MarioScale{ 0.01f, 0.01f, 0.01f };
 
 	float rot[4]{ };
+
 
 	//Animation
 	ModelAnimator* m_pAnimator{};

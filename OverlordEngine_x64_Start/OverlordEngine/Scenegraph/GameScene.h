@@ -38,6 +38,9 @@ public:
 	PhysxProxy* GetPhysxProxy() const { return m_pPhysxProxy; }
 	void SetActiveCamera(CameraComponent* pCameraComponent);
 
+
+	bool IsInit() { return m_IsInitialized; };
+
 protected:
 	virtual void Initialize() = 0;
 	virtual void PostInitialize() {};

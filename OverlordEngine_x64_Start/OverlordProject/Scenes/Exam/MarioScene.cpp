@@ -6,6 +6,7 @@
 #include "Materials/UberMaterial.h"
 #include "Materials/ColorMaterial.h"
 #include "Prefabs/Door.h"
+#include "Prefabs/Coin.h"
 
 MarioScene::~MarioScene()
 {
@@ -28,9 +29,11 @@ void MarioScene::Initialize()
 	//Mario
 	MakeMario(pMat);
 
-	//Bubbles
-	MakeBubbleEmitter(162, -49, -121);
 
+
+	//Coins
+	MakeCoin(10, 10, 0, pMat);
+	MakeCoin(-10, 10, 0, pMat);
 
 	//Level
 	MakeLevel(pMat);
@@ -64,9 +67,12 @@ void MarioScene::Initialize()
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
 
+	//Bubbles
+	MakeBubbleEmitter(178.521f, -12.1922f, -118.9f);
 
 	//GameSceneExt::CreatePhysXGroundPlane(*this, pMat);
 }
+
 
 void MarioScene::OnGUI()
 {
@@ -93,14 +99,57 @@ void MarioScene::OnGUI()
 
 void MarioScene::Update()
 {
-	std::cout << "Mario at: " << MarioTemp->GetTransform()->GetWorldPosition().x <<
-		", " << MarioTemp->GetTransform()->GetWorldPosition().y <<
-		", " << MarioTemp->GetTransform()->GetWorldPosition().z << '\n';
+	constexpr float coinsRotationSpeed{ 120 };
+	m_CoinsRotations += coinsRotationSpeed * m_SceneContext.pGameTime->GetElapsed();
+
+	std::vector<Coin*> coinsToRemove{};
+	for (auto& coin : m_Coins)
+	{
+		if (coin->WasHit())
+		{
+			coinsToRemove.push_back(coin);
+			continue;
+		}
+
+		coin->GetTransform()->Rotate(0, m_CoinsRotations, 0);
+		std::cout << "Not Hit \n";
+
+		std::cout << "coin at: " << coin->GetTransform()->GetWorldPosition().x <<
+			", " << coin->GetTransform()->GetWorldPosition().y <<
+			", " << coin->GetTransform()->GetWorldPosition().z << '\n';
+	}
+
+	// Remove the hit coins from the m_Coins vector
+	for (auto coin : coinsToRemove)
+	{
+		// Find and remove the coin from the m_Coins vector
+		auto it = std::find(m_Coins.begin(), m_Coins.end(), coin);
+		if (it != m_Coins.end())
+		{
+			m_Coins.erase(it);
+		}
+	}
+
+	// Clean up the memory for the hit coins
+	for (auto coin : coinsToRemove)
+	{
+		RemoveChild(coin, true);
+	}
+
+
+
+	std::cout << "Mario at: " << m_pMario->GetTransform()->GetWorldPosition().x <<
+		", " << m_pMario->GetTransform()->GetWorldPosition().y <<
+		", " << m_pMario->GetTransform()->GetWorldPosition().z << '\n';
+
+	//if (PositionTemp)
+	//	std::cout << "Temp at at: " << PositionTemp->GetTransform()->GetWorldPosition().x <<
+	//	", " << PositionTemp->GetTransform()->GetWorldPosition().y <<
+	//	", " << PositionTemp->GetTransform()->GetWorldPosition().z << '\n';
 }
 
 void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 {
-
 
 	const auto pMarioMat = MaterialManager::Get()->CreateMaterial<EntityMaterial_Skinned>();
 
@@ -114,27 +163,25 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 	characterDesc.actionId_MoveRight = CharacterMoveRight;
 	characterDesc.actionId_Jump = CharacterJump;
 
-	const auto pObject = AddChild(new ThirdPersonCharacter(characterDesc));
+	const auto pRoot = AddChild(new ThirdPersonCharacter(characterDesc));
 
-	MarioTemp = pObject;
-	const auto pModelObject = pObject->AddChild(new GameObject());
+	const auto pModelObject = pRoot->AddChild(new GameObject());
 
 	const auto pModel = pModelObject->AddComponent(new ModelComponent(L"Meshes/Mario/MarioModel/Mario.ovm"));
+	m_pMario = pModelObject;
 
-	pObject->SetModel(pModel);
+	pRoot->SetModel(pModel);
 
 	pModel->SetMaterial(pMarioMat);
 
 	//pModel->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
 	pModelObject->GetTransform()->Scale({ MarioScale.x, MarioScale.y,MarioScale.z });
-	pModelObject->GetTransform()->Rotate(0, 180, 0);
 	pModelObject->GetTransform()->Translate(0, -2, 0);
 
-	pObject->GetTransform()->Translate(0, 5, 0);
 
-
+	//Animation Block
 	m_pAnimator = pModel->GetAnimator();
-	pObject->SetAnimator(m_pAnimator);
+	pRoot->SetAnimator(m_pAnimator);
 
 	m_pAnimator->SetAnimation(m_AnimationClipId);
 	m_pAnimator->SetAnimationSpeed(m_AnimationSpeed);
@@ -149,12 +196,13 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 		m_ClipNames[i] = new char[clipSize + 1];
 		strncpy_s(m_ClipNames[i], clipSize + 1, clipName.c_str(), clipSize);
 	}
-
-
 	m_pAnimator->SetAnimation(L"Idle");
 
 	m_pAnimator->Play();
 
+
+	//Animation Block
+	pRoot->GetTransform()->Translate(0, 5, 0);
 }
 
 void MarioScene::MakeBubbleEmitter(float x, float y, float z)
@@ -172,10 +220,19 @@ void MarioScene::MakeBubbleEmitter(float x, float y, float z)
 	settings.color = { 1.f, 1.f, 1.f, .6f };
 
 	const auto pObject = AddChild(new GameObject);
-	pObject->GetTransform()->Translate(x, y, z );
+	pObject->GetTransform()->Translate(x, y, z);
 	pObject->AddComponent(new ParticleEmitterComponent(L"Textures/Mario/Bubble/Bubble.png", settings, 10));
 
 	PositionTemp = pObject;
+}
+
+void MarioScene::MakeCoin(float x, float y, float z, physx::PxMaterial* pPhysicsMaterial)
+{
+
+	auto pCoin = AddChild(new Coin(pPhysicsMaterial, m_pMario));
+	pCoin->GetTransform()->Translate(x, y, z);
+
+	m_Coins.emplace_back(pCoin);
 }
 
 void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
@@ -220,29 +277,6 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 
 	pGrass2Model->SetMaterial(pGrass2Mat);
 
-
-	//Water
-	auto pWaterMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pWaterMat->SetDiffuseTexture(L"Textures/Mario/Castle/Water.png");
-	pWaterMat->SetUseNormalMaps(false);
-	pWaterMat->SetUseSpecularTexture(false);
-	pWaterMat->SetOpacityIntensity(0.75f);
-
-	const auto pWater = pCastleRoot->AddChild(new GameObject());
-
-	const auto pWaterModel = pWater->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Water.ovm"));
-	pWater->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
-
-
-	//const auto pWaterMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Water.ovpt");
-	//
-	//auto pWaterRB = pWater->AddComponent(new RigidBodyComponent(true));
-	//pWaterRB->AddCollider(PxTriangleMeshGeometry{ pWaterMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
-
-	pWaterModel->SetMaterial(pWaterMat);
-	pWaterModel->DrawPost(true);
-
-	m_pDebugMat = pWaterMat;
 
 	//Sand
 	auto pSandMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
@@ -475,24 +509,6 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	pUnderWaterBricksModel->SetMaterial(pUnderWaterBricksMat);
 
 
-	//Waterfall
-	auto pWaterfallMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pWaterfallMat->SetDiffuseTexture(L"Textures/Mario/Castle/Water.png");
-	pWaterfallMat->SetUseNormalMaps(false);
-	pWaterfallMat->SetUseSpecularTexture(false);
-
-	const auto pWaterfall = pCastleRoot->AddChild(new GameObject());
-	const auto pWaterfallModel = pWaterfall->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Waterfall.ovm"));
-	pWaterfall->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
-
-
-	const auto pWaterfallMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Waterfall.ovpt");
-
-	auto pWaterfallRB = pWaterfall->AddComponent(new RigidBodyComponent(true));
-	pWaterfallRB->AddCollider(PxTriangleMeshGeometry{ pWaterfallMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
-
-	pWaterfallModel->SetMaterial(pWaterfallMat);
-
 
 	//Castle
 	auto pCastleMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
@@ -629,6 +645,54 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	pPeachBottomRB->AddCollider(PxTriangleMeshGeometry{ pPeachBottomMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
 
 	pPeachBottomModel->SetMaterial(pPeachBottomMat);
+
+
+
+	//Water
+	auto pWaterMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
+	pWaterMat->SetDiffuseTexture(L"Textures/Mario/Castle/Water.png");
+	pWaterMat->SetUseNormalMaps(false);
+	pWaterMat->SetUseSpecularTexture(false);
+	pWaterMat->SetOpacityIntensity(0.75f);
+
+	const auto pWater = pCastleRoot->AddChild(new GameObject());
+
+	const auto pWaterModel = pWater->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Water.ovm"));
+	pWater->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
+
+
+
+
+
+	//const auto pWaterMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Water.ovpt");
+	//
+	//auto pWaterRB = pWater->AddComponent(new RigidBodyComponent(true));
+	//pWaterRB->AddCollider(PxTriangleMeshGeometry{ pWaterMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+
+	pWaterModel->SetMaterial(pWaterMat);
+	pWaterModel->DrawPost(false);
+
+	m_pDebugMat = pWaterMat;
+
+	//Waterfall
+	auto pWaterfallMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
+	pWaterfallMat->SetDiffuseTexture(L"Textures/Mario/Castle/Water.png");
+	pWaterfallMat->SetUseNormalMaps(false);
+	pWaterfallMat->SetUseSpecularTexture(false);
+	pWaterfallMat->SetOpacityIntensity(0.75f);
+
+	const auto pWaterfall = pCastleRoot->AddChild(new GameObject());
+	const auto pWaterfallModel = pWaterfall->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Waterfall.ovm"));
+	pWaterfall->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
+
+
+	const auto pWaterfallMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Waterfall.ovpt");
+
+	auto pWaterfallRB = pWaterfall->AddComponent(new RigidBodyComponent(true));
+	pWaterfallRB->AddCollider(PxTriangleMeshGeometry{ pWaterfallMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+
+	pWaterfallModel->SetMaterial(pWaterfallMat);
+	pWaterfallModel->DrawPost(false);
 
 
 	pRootTransform->Translate(0, 0.25f, 0);

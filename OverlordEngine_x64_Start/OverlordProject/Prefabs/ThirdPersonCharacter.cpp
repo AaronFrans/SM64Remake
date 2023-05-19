@@ -86,7 +86,6 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 
 
 		GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
-
 		m_pModelComponent->GetTransform()->Rotate(-m_TotalPitch, 180, 0);
 
 
