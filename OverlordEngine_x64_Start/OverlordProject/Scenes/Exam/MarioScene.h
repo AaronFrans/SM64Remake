@@ -3,6 +3,8 @@
 
 class UberMaterial;
 class Coin;
+class ParticleEmmiter;
+class PostUnderwater;
 class MarioScene final : public GameScene
 {
 public:
@@ -20,6 +22,8 @@ protected:
 
 	void Update() override;
 private:
+
+
 	enum InputIds
 	{
 		CharacterMoveLeft,
@@ -37,23 +41,28 @@ private:
 
 	void MakeLevel(physx::PxMaterial* physicsMaterial);
 
+	void MakeUnderwater(physx::PxMaterial* physicsMaterial);
 
-	//Coins
-	std::vector<Coin*> m_Coins{};
-	float m_CoinsRotations{ 0 };
+	//Character
+	GameObject* m_pMario{};
 
-	int m_NrCoins{};
+
+	//Underwater Volume
+	unsigned m_NrCoinsPickedUp{};
+	PostUnderwater* m_pPostUnderwater;
+
+
 
 	//Current Material Being Debugged
 	UberMaterial* m_pDebugMat{};
 
-	GameObject* m_pMario{};
+	//Current GameObject Being Debugged
 	GameObject* PositionTemp{};
+	float rot[4]{ 0,0,0,0 };
 
+	//Scales
 	const PxVec3 CorrectScale{ 20,20,20 };
 	const PxVec3 MarioScale{ 0.01f, 0.01f, 0.01f };
-
-	float rot[4]{ };
 
 
 	//Animation
@@ -63,4 +72,12 @@ private:
 
 	char** m_ClipNames{};
 	UINT m_ClipCount{};
+
+
+	//Ui
+	SpriteFont* m_pFont{};
+
+	std::string m_CoinsGotten{ "Nr of Coins %d", m_NrCoinsPickedUp };
+	XMFLOAT2 m_CoinsGottenPosition{};
+	XMFLOAT4 m_TextColor{ 189 / 255.0f, 183 / 255.0f, 107 / 255.0f, 1 };
 };

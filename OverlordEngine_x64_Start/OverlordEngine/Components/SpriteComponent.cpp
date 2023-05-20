@@ -32,11 +32,16 @@ void SpriteComponent::Draw(const SceneContext& sceneContext)
 	const XMFLOAT3& pos = pObjectTrans->GetWorldPosition();
 	const XMFLOAT3& scale = pObjectTrans->GetWorldScale();
 
-	const float& rot = MathHelper::QuaternionToEuler(pObjectTrans->GetRotation()).z;
+	const float& rot = MathHelper::QuaternionToEuler(pObjectTrans->GetWorldRotation()).z;
 
+	SpriteRenderer::Get()->AppendSprite(
+		m_pTexture,
+		DirectX::XMFLOAT2{ pos.x, pos.y },
+		m_Color,
+		m_Pivot,
+		DirectX::XMFLOAT2{ scale.x, scale.y },
+		rot,
+		pos.z);
 
-	SpriteRenderer::Get()->DrawImmediate(
-		sceneContext.d3dContext, m_pTexture->GetShaderResourceView(),
-		XMFLOAT2(pos.x, pos.y), m_Color, 
-		m_Pivot, XMFLOAT2{scale.x, scale.y}, rot);
+	SpriteRenderer::Get()->Draw(sceneContext);
 }

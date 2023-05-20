@@ -240,3 +240,8 @@ void ThirdPersonCharacter::SetAnimator(ModelAnimator* modelAnimator)
 {
 	m_pModelAnimator = modelAnimator;
 }
+
+const FixedCamera* ThirdPersonCharacter::GetCamera()
+{
+	return static_cast<FixedCamera*>(m_pCameraComponent->GetGameObject());
+}

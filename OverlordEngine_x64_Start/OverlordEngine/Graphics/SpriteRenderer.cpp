@@ -59,7 +59,7 @@ void SpriteRenderer::UpdateBuffer(const SceneContext& sceneContext)
 
 		if (m_pVertexBuffer) m_pVertexBuffer->Release();
 
-		if (m_Sprites.size() != m_BufferSize) m_BufferSize = static_cast<UINT>(m_Sprites.size());
+		if (m_Sprites.size() > m_BufferSize) m_BufferSize = static_cast<UINT>(m_Sprites.size());
 
 		D3D11_BUFFER_DESC bd{};
 		bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -87,7 +87,8 @@ void SpriteRenderer::UpdateBuffer(const SceneContext& sceneContext)
 	//SORT BY TEXTURE
 	std::ranges::sort(m_Sprites, [](const VertexSprite& v0, const VertexSprite& v1)
 	{
-		return v0.TextureId < v1.TextureId;
+		
+		return SpriteSortByTexture(v0, v1);
 	});
 
 	//SORT BY DEPTH
@@ -96,7 +97,7 @@ void SpriteRenderer::UpdateBuffer(const SceneContext& sceneContext)
 	{
 		if (v0.TextureId == v1.TextureId)
 		{
-			return v0.TransformData.z < v1.TransformData.z;
+			return SpriteSortByDepth(v0, v1);
 		}
 
 		return false;
@@ -113,7 +114,7 @@ void SpriteRenderer::UpdateBuffer(const SceneContext& sceneContext)
 		D3D11_MAPPED_SUBRESOURCE ms{};
 		sceneContext.d3dContext.pDeviceContext->Map(m_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
 
-		memcpy(ms.pData, m_Sprites.data(), m_BufferSize);
+		memcpy(ms.pData, m_Sprites.data(), m_Sprites.size() * sizeof(VertexSprite));
 
 		sceneContext.d3dContext.pDeviceContext->Unmap(m_pVertexBuffer, 0);
 	}

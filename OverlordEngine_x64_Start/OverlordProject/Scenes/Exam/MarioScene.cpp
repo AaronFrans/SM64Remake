@@ -5,8 +5,13 @@
 #include "Materials/Mario/EntityMaterial_Skinned.h"
 #include "Materials/UberMaterial.h"
 #include "Materials/ColorMaterial.h"
+#include "Materials/Mario/Post/PostUnderwater.h"
+
+
 #include "Prefabs/Door.h"
 #include "Prefabs/Coin.h"
+#include "Prefabs/ParticleEmmiter.h"
+#include "Prefabs/CubePrefab.h"
 
 MarioScene::~MarioScene()
 {
@@ -29,7 +34,7 @@ void MarioScene::Initialize()
 	//Mario
 	MakeMario(pMat);
 
-
+	MakeUnderwater(pMat);
 
 	//Coins
 	MakeCoin(10, 10, 0, pMat);
@@ -37,8 +42,6 @@ void MarioScene::Initialize()
 
 	//Level
 	MakeLevel(pMat);
-	//
-	//
 
 	auto door = AddChild(new Door(pMat));
 	door->GetTransform()->Translate(52.514f, -12.258f, -146.816f);
@@ -47,7 +50,6 @@ void MarioScene::Initialize()
 	auto door2 = AddChild(new Door(pMat));
 	door2->GetTransform()->Translate(52.702f, -12.16f, -146.689f);
 	door2->GetTransform()->Rotate(115.9f, 161.1f, 9.3f);
-
 
 
 	//Input
@@ -70,14 +72,25 @@ void MarioScene::Initialize()
 	//Bubbles
 	MakeBubbleEmitter(178.521f, -12.1922f, -118.9f);
 
-	//GameSceneExt::CreatePhysXGroundPlane(*this, pMat);
-}
 
+
+	m_pFont = ContentManager::Load<SpriteFont>(L"SpriteFonts/Mario/Mario64.fnt");
+}
 
 void MarioScene::OnGUI()
 {
 	if (m_pDebugMat)
 		m_pDebugMat->DrawImGui();
+
+	char buffer[256]{};
+	m_CoinsGotten.copy(&buffer[0], 256);
+	if (ImGui::InputText("Text", &buffer[0], 256))
+	{
+		m_CoinsGotten = std::string(buffer);
+	}
+
+	ImGui::SliderFloat2("Position", &m_CoinsGottenPosition.x, 0, m_SceneContext.windowWidth);
+	ImGui::ColorEdit4("Color", &m_TextColor.x, ImGuiColorEditFlags_NoInputs);
 
 	if (PositionTemp)
 	{
@@ -85,67 +98,26 @@ void MarioScene::OnGUI()
 		auto curPos = PositionTemp->GetTransform()->GetWorldPosition();
 		float pos[3]{ curPos.x, curPos.y, curPos.z };
 
-		ImGui::DragFloat3("Translation", pos, 0.1f, -300, 300);
+		ImGui::DragFloat3("Translation", pos, 0.1f, -2000, 2000);
 		PositionTemp->GetTransform()->Translate(pos[0], pos[1], pos[2]);
 
-
-
-
-		ImGui::DragFloat4("Rotation", rot, 0.1f, -380, 380);
-		PositionTemp->GetTransform()->Rotate(rot[0], rot[1], rot[2], rot[4]);
+		ImGui::DragFloat4("Rotation", rot, 0.01f, -380, 380);
+		PositionTemp->GetTransform()->Rotate(rot[0], rot[1], rot[2], rot[3]);
 	}
 
 }
 
 void MarioScene::Update()
 {
-	constexpr float coinsRotationSpeed{ 120 };
-	m_CoinsRotations += coinsRotationSpeed * m_SceneContext.pGameTime->GetElapsed();
+	//std::cout << "Mario at: " << m_pMario->GetTransform()->GetWorldPosition().x <<
+	//	", " << m_pMario->GetTransform()->GetWorldPosition().y <<
+	//	", " << m_pMario->GetTransform()->GetWorldPosition().z << '\n';
+	//
 
-	std::vector<Coin*> coinsToRemove{};
-	for (auto& coin : m_Coins)
-	{
-		if (coin->WasHit())
-		{
-			coinsToRemove.push_back(coin);
-			continue;
-		}
-
-		coin->GetTransform()->Rotate(0, m_CoinsRotations, 0);
-		std::cout << "Not Hit \n";
-
-		std::cout << "coin at: " << coin->GetTransform()->GetWorldPosition().x <<
-			", " << coin->GetTransform()->GetWorldPosition().y <<
-			", " << coin->GetTransform()->GetWorldPosition().z << '\n';
-	}
-
-	// Remove the hit coins from the m_Coins vector
-	for (auto coin : coinsToRemove)
-	{
-		// Find and remove the coin from the m_Coins vector
-		auto it = std::find(m_Coins.begin(), m_Coins.end(), coin);
-		if (it != m_Coins.end())
-		{
-			m_Coins.erase(it);
-		}
-	}
-
-	// Clean up the memory for the hit coins
-	for (auto coin : coinsToRemove)
-	{
-		RemoveChild(coin, true);
-	}
+	m_CoinsGotten = { "Nr of Coins " + std::to_string(m_NrCoinsPickedUp) };
 
 
-
-	std::cout << "Mario at: " << m_pMario->GetTransform()->GetWorldPosition().x <<
-		", " << m_pMario->GetTransform()->GetWorldPosition().y <<
-		", " << m_pMario->GetTransform()->GetWorldPosition().z << '\n';
-
-	//if (PositionTemp)
-	//	std::cout << "Temp at at: " << PositionTemp->GetTransform()->GetWorldPosition().x <<
-	//	", " << PositionTemp->GetTransform()->GetWorldPosition().y <<
-	//	", " << PositionTemp->GetTransform()->GetWorldPosition().z << '\n';
+	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(m_CoinsGotten), m_CoinsGottenPosition, m_TextColor);
 }
 
 void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
@@ -165,9 +137,13 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 
 	const auto pRoot = AddChild(new ThirdPersonCharacter(characterDesc));
 
+	pRoot->SetTag(L"Mario");
+
+
 	const auto pModelObject = pRoot->AddChild(new GameObject());
 
 	const auto pModel = pModelObject->AddComponent(new ModelComponent(L"Meshes/Mario/MarioModel/Mario.ovm"));
+	pModelObject->SetTag(L"Mario");
 	m_pMario = pModelObject;
 
 	pRoot->SetModel(pModel);
@@ -187,19 +163,10 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 	m_pAnimator->SetAnimationSpeed(m_AnimationSpeed);
 
 	//Gather Clip Names
-	m_ClipCount = m_pAnimator->GetClipCount();
-	m_ClipNames = new char* [m_ClipCount];
-	for (UINT i{ 0 }; i < m_ClipCount; ++i)
-	{
-		auto clipName = StringUtil::utf8_encode(m_pAnimator->GetClip(static_cast<int>(i)).name);
-		const auto clipSize = clipName.size();
-		m_ClipNames[i] = new char[clipSize + 1];
-		strncpy_s(m_ClipNames[i], clipSize + 1, clipName.c_str(), clipSize);
-	}
+
 	m_pAnimator->SetAnimation(L"Idle");
 
 	m_pAnimator->Play();
-
 
 	//Animation Block
 	pRoot->GetTransform()->Translate(0, 5, 0);
@@ -222,17 +189,12 @@ void MarioScene::MakeBubbleEmitter(float x, float y, float z)
 	const auto pObject = AddChild(new GameObject);
 	pObject->GetTransform()->Translate(x, y, z);
 	pObject->AddComponent(new ParticleEmitterComponent(L"Textures/Mario/Bubble/Bubble.png", settings, 10));
-
-	PositionTemp = pObject;
 }
 
 void MarioScene::MakeCoin(float x, float y, float z, physx::PxMaterial* pPhysicsMaterial)
 {
-
-	auto pCoin = AddChild(new Coin(pPhysicsMaterial, m_pMario));
+	auto pCoin = AddChild(new Coin(pPhysicsMaterial, &m_NrCoinsPickedUp));
 	pCoin->GetTransform()->Translate(x, y, z);
-
-	m_Coins.emplace_back(pCoin);
 }
 
 void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
@@ -697,3 +659,46 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 
 	pRootTransform->Translate(0, 0.25f, 0);
 }
+
+void MarioScene::MakeUnderwater(physx::PxMaterial* physicsMaterial)
+{
+	auto pUnderwater = AddChild(new GameObject());
+
+	PxVec3 scale{ 1000, 400, 1000 };
+	pUnderwater->GetTransform()->Scale(scale.x, scale.y, scale.z);
+
+	pUnderwater->GetTransform()->Rotate(4.532f, 0.001f, 1.611f);
+	pUnderwater->GetTransform()->Translate(4.9f, -511.9f, 12.4f);
+	rot[0] = 4.532f;
+	rot[1] = 0.001f;
+	rot[2] = 1.611f;
+	PositionTemp = pUnderwater;
+
+	auto pUnderwaterRB = pUnderwater->AddComponent(new RigidBodyComponent());
+	pUnderwaterRB->SetKinematic(true);
+
+	pUnderwaterRB->AddCollider(PxBoxGeometry{ scale / 2.0f }, *physicsMaterial, true);
+
+	m_pPostUnderwater = MaterialManager::Get()->CreateMaterial<PostUnderwater>();
+
+	pUnderwater->SetOnTriggerCallBack([&](GameObject*, GameObject* pOther, PxTriggerAction action) {
+
+
+		if (action == PxTriggerAction::ENTER && pOther->GetTag() == L"Mario")
+		{
+			std::cout << "enter";
+			AddPostProcessingEffect(m_pPostUnderwater);
+		}
+
+
+		if (action == PxTriggerAction::LEAVE && pOther->GetTag() == L"Mario")
+		{
+
+			std::cout << "left";
+			RemovePostProcessingEffect(m_pPostUnderwater);
+
+		}
+
+		});
+}
+

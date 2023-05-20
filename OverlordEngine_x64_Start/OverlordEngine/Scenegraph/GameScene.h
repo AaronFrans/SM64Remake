@@ -74,4 +74,5 @@ private:
 
 	std::vector<PostProcessingMaterial*> m_PostProcessingMaterials{};
 	OverlordGame* m_pGame{};
+
 };

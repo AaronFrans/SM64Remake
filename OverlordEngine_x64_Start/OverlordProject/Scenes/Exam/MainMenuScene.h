@@ -1,8 +1,10 @@
 #pragma once
+
+class Button;
 class MainMenuScene : public GameScene
 {
 public:
-	MainMenuScene() : GameScene(L"MarioScene") {}
+	MainMenuScene() : GameScene(L"MainMenuScene") {}
 	~MainMenuScene() override = default;
 	MainMenuScene(const MainMenuScene& other) = delete;
 	MainMenuScene(MainMenuScene&& other) noexcept = delete;
@@ -17,11 +19,9 @@ protected:
 
 private:
 
-	SpriteFont* m_pFont{};
+	GameObject* PositionTemp{};
 
-	std::string m_Text{ "Hello World! (Change Text/Position/Color in Scene Parameters)" };
-	XMFLOAT2 m_TextPosition{};
-	XMFLOAT4 m_TextColor{ 1.f,1.f,1.f,1.f };
+	std::vector<Button*> m_Buttons;
 
 };
 

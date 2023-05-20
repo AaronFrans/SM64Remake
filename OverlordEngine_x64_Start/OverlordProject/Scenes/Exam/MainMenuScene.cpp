@@ -1,30 +1,41 @@
 #include "stdafx.h"
 #include "MainMenuScene.h"
+#include "Prefabs/Button.h"
+#include "MarioScene.h"
 
 void MainMenuScene::Initialize()
 {
 	m_SceneContext.settings.enableOnGUI = true;
 	m_SceneContext.settings.clearColor = { 0,0,0,1 };
-	//const auto pMaterial = PxGetPhysics().createMaterial(.5f, .5f, .5f);
 
 	m_SceneContext.pInput->ForceMouseToCenter(false);
 	m_SceneContext.settings.drawPhysXDebug = false;
 
 	auto pCamera = AddChild(new FixedCamera)->GetComponent<CameraComponent>();
 
-
-	//pCamera->SetFieldOfView(XMConvertToRadians(80.0f));
-
 	SetActiveCamera(pCamera);
 
-	auto pStart = AddChild(new GameObject);
-	pStart->AddComponent(new SpriteComponent(L"Textures/Mario/Main Menu/Start.png"));
 
-	AddChild(new GameObject)->AddComponent(new SpriteComponent(L"Textures/Mario/Main Menu/Main Menu.png"));
-	//pBackground->GetTransform()->Scale({ 2, 1.6f, 1 });
+	auto pStart = AddChild(new Button(L"Textures/Mario/Main Menu/Start.png",
+		[&]() {
+			SceneManager::Get()->SetActiveGameScene(L"MarioScene");
+		}));
+	m_Buttons.emplace_back(pStart);
+	pStart->GetTransform()->Translate(290, 550, 0.7f);
 
 
-	m_pFont = ContentManager::Load<SpriteFont>(L"SpriteFonts/Mario/Mario64.fnt");
+
+	auto pQuit = AddChild(new Button(L"Textures/Mario/Main Menu/Quit.png", [&]() {OverlordGame::Quit(); }));
+	pQuit->GetTransform()->Translate(820, 550, 0.5f);
+
+	m_Buttons.emplace_back(pQuit);
+
+
+	auto pBG = AddChild(new GameObject);
+	pBG->AddComponent(new SpriteComponent(L"Textures/Mario/Main Menu/Main Menu.png"));
+	pBG->GetTransform()->Translate(0, 0, 0.9f);
+
+	PositionTemp = pStart;
 
 
 }
@@ -33,24 +44,27 @@ void MainMenuScene::Update()
 {
 	if (InputManager::IsMouseButton(InputState::pressed, VK_LBUTTON))
 	{
-		if (const auto pPickedObject = m_SceneContext.pCamera->Pick())
+		auto mousePos = InputManager::GetMousePosition();
+		for (auto button : m_Buttons)
 		{
-			std::cout << "clicked button";
+			button->OnClicked(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 		}
 	}
 
-	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(m_Text), m_TextPosition, m_TextColor);
 }
 
 void MainMenuScene::OnGUI()
 {
-	char buffer[256]{};
-	m_Text.copy(&buffer[0], 256);
-	if (ImGui::InputText("Text", &buffer[0], 256))
-	{
-		m_Text = std::string(buffer);
-	}
 
-	ImGui::SliderFloat2("Position", &m_TextPosition.x, 0, m_SceneContext.windowWidth);
-	ImGui::ColorEdit4("Color", &m_TextColor.x, ImGuiColorEditFlags_NoInputs);
+
+
+	if (PositionTemp)
+	{
+
+		auto curPos = PositionTemp->GetTransform()->GetWorldPosition();
+		float pos[3]{ curPos.x, curPos.y, curPos.z };
+
+		ImGui::DragFloat3("Translation", pos, 1, -300, 2000);
+		PositionTemp->GetTransform()->Translate(pos[0], pos[1], pos[2]);
+	}
 }

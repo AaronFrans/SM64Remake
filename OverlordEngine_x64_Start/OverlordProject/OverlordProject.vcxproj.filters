@@ -42,6 +42,10 @@
     <ClCompile Include="Materials\Mario\EntityMaterial_Skinned.cpp" />
     <ClCompile Include="Scenes\Exam\MainMenuScene.cpp" />
     <ClCompile Include="Prefabs\Coin.cpp" />
+    <ClCompile Include="Prefabs\Button.cpp" />
+    <ClCompile Include="Prefabs\ParticleEmmiter.cpp" />
+    <ClCompile Include="Materials\Mario\Post\PostUnderwater.cpp" />
+    <ClCompile Include="Goomba.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -84,5 +88,9 @@
     <ClInclude Include="Materials\Mario\EntityMaterial_Skinned.h" />
     <ClInclude Include="Scenes\Exam\MainMenuScene.h" />
     <ClInclude Include="Prefabs\Coin.h" />
+    <ClInclude Include="Prefabs\Button.h" />
+    <ClInclude Include="Prefabs\ParticleEmmiter.h" />
+    <ClInclude Include="Materials\Mario\Post\PostUnderwater.h" />
+    <ClInclude Include="Goomba.h" />
   </ItemGroup>
 </Project>

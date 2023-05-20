@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "OverlordGame.h"
 
+bool OverlordGame::m_IsGameRunning = true;
+
+
 OverlordGame::OverlordGame():
 	m_IsActive(true)
 {
@@ -74,7 +77,7 @@ HRESULT OverlordGame::Run(HINSTANCE hInstance)
 
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
-	while(msg.message != WM_QUIT)
+	while(msg.message != WM_QUIT && m_IsGameRunning)
 	{
 		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{

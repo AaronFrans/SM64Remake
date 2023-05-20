@@ -1,14 +1,15 @@
 #pragma once
+class ParticleEmmiter;
 class Coin final : public GameObject
 {
 public:
-	Coin(physx::PxMaterial* physicsMaterial, GameObject* mario);
-
-	bool WasHit() { return m_WasHit; };
+	Coin(physx::PxMaterial* physicsMaterial, unsigned* coinCounter);
 
 protected:
 
 	void Initialize(const SceneContext& scene) override;
+
+	void Update(const SceneContext&) override;
 
 	void PostInitialize(const SceneContext& sceneContext) override;
 
@@ -22,6 +23,13 @@ private:
 
 	UINT m_ColliderId{};
 
-	bool m_WasHit{false};
+	bool m_WasHit{ false };
+	bool m_CanBeHit{ false };
+
+	ParticleEmmiter* m_pEmmiter{ nullptr };
+
+	unsigned* m_pCoinCounter{};
+
+	float m_CoinRotation{ 0 };
 };
 

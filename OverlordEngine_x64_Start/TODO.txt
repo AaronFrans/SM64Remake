@@ -1,6 +1,5 @@
 Main menu:
     -> buttons first
-    -> make prefab to check mouse pos
 
 
 Particles:

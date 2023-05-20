@@ -2,10 +2,11 @@
 #include "Coin.h"
 
 #include "Materials/ColorMaterial.h"
+#include "Prefabs/ParticleEmmiter.h"
 
-Coin::Coin(physx::PxMaterial* physicsMaterial, GameObject* mario)
+Coin::Coin(physx::PxMaterial* physicsMaterial, unsigned* coinCounter)
 	: m_pPhysicsMaterial{ physicsMaterial }
-	, m_pMario{ mario }
+	, m_pCoinCounter{ coinCounter }
 
 {
 }
@@ -31,7 +32,55 @@ void Coin::Initialize(const SceneContext&)
 		*m_pPhysicsMaterial, true);
 
 	pCoinModel->SetMaterial(pCoinMat);
-	
+
+
+}
+
+void Coin::Update(const SceneContext& sceneContext)
+{
+	constexpr int minWaitTime{ 1 };
+
+	if (sceneContext.pGameTime->GetTotal() < minWaitTime)
+		return;
+
+	constexpr float coinsRotationSpeed{ 120 };
+	m_CoinRotation += coinsRotationSpeed * sceneContext.pGameTime->GetElapsed();
+
+	m_CanBeHit = true;
+
+	GetTransform()->Rotate(0, m_CoinRotation, 0);
+
+	if (m_WasHit && !m_pEmmiter)
+	{
+		ParticleEmitterSettings settings{};
+		settings.velocity = { 0,0,0 };
+		settings.minSize = 0.5f;
+		settings.maxSize = 1.1f;
+		settings.minEnergy = 1;
+		settings.maxEnergy = 1;
+		settings.minScale = 1;
+		settings.maxScale = 1.5f;
+		settings.minEmitterRadius = .2f;
+		settings.maxEmitterRadius = .5f;
+		settings.color = { 1.f, 1.f, 1.f, .6f };
+
+		m_pEmmiter = AddChild(new ParticleEmmiter(L"Textures/Mario/Coins/Sparkle.png", settings, 50));
+
+		m_pEmmiter->GetTransform()->Translate(GetTransform()->GetWorldPosition());
+
+		auto pMesh = GetComponent<ModelComponent>();
+
+		RemoveComponent(pMesh, true);
+
+		return;
+	}
+
+	if (m_pEmmiter && m_pEmmiter->IsDone())
+	{
+		SceneManager::Get()->GetActiveScene()->RemoveChild(this, true);
+	}
+
+
 
 }
 
@@ -43,13 +92,17 @@ void Coin::PostInitialize(const SceneContext&)
 
 	SetOnTriggerCallBack([&](GameObject*, GameObject* pOther, PxTriggerAction action) {
 
+		if (!m_CanBeHit || m_WasHit)
+			return;
 
-		if (action != PxTriggerAction::ENTER && pOther != m_pMario)
+		if (action != PxTriggerAction::ENTER && pOther->GetTag() == L"Mario")
 			return;
 
 		std::cout << "hit";
 
 		m_WasHit = true;
+
+		*m_pCoinCounter += 1;
 
 		});
 }

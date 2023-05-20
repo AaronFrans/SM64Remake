@@ -136,6 +136,7 @@ void ParticleEmitterComponent::SpawnParticle(Particle& p)
 		});
 
 	const float particalDistance{ MathHelper::randF(m_EmitterSettings.minEmitterRadius, m_EmitterSettings.maxEmitterRadius) };
+
 	XMStoreFloat3(&p.vertexInfo.Position, XMLoadFloat3(&GetTransform()->GetWorldPosition()) + randomDir * particalDistance);
 
 	p.initialSize = MathHelper::randF(m_EmitterSettings.minSize, m_EmitterSettings.maxSize);

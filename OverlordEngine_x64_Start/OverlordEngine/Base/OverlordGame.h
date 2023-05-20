@@ -17,13 +17,15 @@ public:
 	static LRESULT CALLBACK WindowsProcedureStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	//const GameContext& GetGameContext() const { return m_GameContext; }
 
+	static void Quit() { m_IsGameRunning = false; }
+
 	HRESULT Run(HINSTANCE hInstance);
 
 	void SetRenderTarget(RenderTarget* renderTarget);
 	RenderTarget* GetRenderTarget() const;
 
 protected:
-	virtual void OnGamePreparing(GameContext& /*gameContext*/){}
+	virtual void OnGamePreparing(GameContext& /*gameContext*/) {}
 	virtual LRESULT WindowProcedureHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	virtual void Initialize() = 0;
 
@@ -54,5 +56,8 @@ private:
 	D3D11_VIEWPORT m_Viewport{};
 
 	GameContext m_GameContext{};
+
+
+	static bool m_IsGameRunning;
 };
 

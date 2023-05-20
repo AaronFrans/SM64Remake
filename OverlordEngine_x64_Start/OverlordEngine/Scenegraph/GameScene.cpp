@@ -147,6 +147,8 @@ void GameScene::RootUpdate()
 	}
 
 	m_pPhysxProxy->Update(m_SceneContext);
+
+
 }
 
 void GameScene::RootDraw()
@@ -187,17 +189,19 @@ void GameScene::RootDraw()
 		pChild->RootPostDraw(m_SceneContext);
 	}
 
-	//SpriteRenderer Draw
-	SpriteRenderer::Get()->Draw(m_SceneContext);
-
-	//TextRenderer Draw
-	TextRenderer::Get()->Draw(m_SceneContext);
 
 	//Draw PhysX
 	m_pPhysxProxy->Draw(m_SceneContext);
 
 	//Draw Debug Stuff
 	DebugRenderer::Draw(m_SceneContext);
+
+
+	//SpriteRenderer Draw
+	SpriteRenderer::Get()->Draw(m_SceneContext);
+
+	//TextRenderer Draw
+	TextRenderer::Get()->Draw(m_SceneContext);
 #pragma endregion
 
 
@@ -240,6 +244,7 @@ void GameScene::RootDraw()
 		//Done!
 	}
 #pragma endregion
+
 }
 
 void GameScene::RootOnSceneActivated()

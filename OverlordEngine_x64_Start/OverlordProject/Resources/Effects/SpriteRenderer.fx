@@ -91,9 +91,11 @@ void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 	//Given Data (Vertex Data)
     float3 position = vertex[0].TransformData.xyz; //Extract the position data from the VS_DATA vertex struct
     float2 offset = vertex[0].TransformData.xy; //Extract the offset data from the VS_DATA vertex struct (initial X and Y position)
+
     float rotation = vertex[0].TransformData.w; //Extract the rotation data from the VS_DATA vertex struct
     float2 pivot = vertex[0].TransformData2.xy; //Extract the pivot data from the VS_DATA vertex struct
     float2 scale = vertex[0].TransformData2.zw; //Extract the scale data from the VS_DATA vertex struct
+    
     float2 texCoord = float2(0, 0); //Initial Texture Coordinate
     float4 color = vertex[0].Color; 
 	
