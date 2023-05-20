@@ -1,6 +1,25 @@
+Add shadows to entity and uber shaders,
+goomba movement + hitbox
+punch state for mario + check for goomba
+jump on goomba + rebound
+coin image for ui
+pause menu + buttons
+sfx to start menu,
+sfx to all states,
+coin pick up sfx,
+goomba on kill -> smoke
+sprint
+backflip
+long jump
+
+player health hud
+lives left hud
+
+controller controls
+
+
 Main menu:
     -> buttons first
-
 
 Particles:
     ->Always last
