@@ -93,8 +93,8 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Goomba.cpp" />
     <ClCompile Include="Materials\Mario\Post\PostUnderwater.cpp" />
+    <ClCompile Include="Prefabs\Goomba.cpp" />
     <ClCompile Include="Prefabs\ParticleEmmiter.cpp" />
     <ClCompile Include="Prefabs\Button.cpp" />
     <ClCompile Include="Prefabs\Coin.cpp" />
@@ -157,8 +157,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Goomba.h" />
     <ClInclude Include="Materials\Mario\Post\PostUnderwater.h" />
+    <ClInclude Include="Prefabs\Goomba.h" />
     <ClInclude Include="Prefabs\ParticleEmmiter.h" />
     <ClInclude Include="Prefabs\Button.h" />
     <ClInclude Include="Prefabs\Coin.h" />

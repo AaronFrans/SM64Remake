@@ -45,7 +45,7 @@
     <ClCompile Include="Prefabs\Button.cpp" />
     <ClCompile Include="Prefabs\ParticleEmmiter.cpp" />
     <ClCompile Include="Materials\Mario\Post\PostUnderwater.cpp" />
-    <ClCompile Include="Goomba.cpp" />
+    <ClCompile Include="Prefabs\Goomba.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -91,6 +91,6 @@
     <ClInclude Include="Prefabs\Button.h" />
     <ClInclude Include="Prefabs\ParticleEmmiter.h" />
     <ClInclude Include="Materials\Mario\Post\PostUnderwater.h" />
-    <ClInclude Include="Goomba.h" />
+    <ClInclude Include="Prefabs\Goomba.h" />
   </ItemGroup>
 </Project>

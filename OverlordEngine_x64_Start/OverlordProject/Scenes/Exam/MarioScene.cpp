@@ -12,6 +12,7 @@
 #include "Prefabs/Coin.h"
 #include "Prefabs/ParticleEmmiter.h"
 #include "Prefabs/CubePrefab.h"
+#include "Prefabs/Goomba.h"
 
 MarioScene::~MarioScene()
 {
@@ -39,6 +40,10 @@ void MarioScene::Initialize()
 	//Coins
 	MakeCoin(10, 10, 0, pMat);
 	MakeCoin(-10, 10, 0, pMat);
+
+
+	auto pGoomb = AddChild(new Goomba(pMat));
+	pGoomb->GetTransform()->Translate(0, 10, 0);
 
 	//Level
 	MakeLevel(pMat);
@@ -144,7 +149,6 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 
 	const auto pModel = pModelObject->AddComponent(new ModelComponent(L"Meshes/Mario/MarioModel/Mario.ovm"));
 	pModelObject->SetTag(L"Mario");
-	m_pMario = pModelObject;
 
 	pRoot->SetModel(pModel);
 
