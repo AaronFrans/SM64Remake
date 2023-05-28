@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 class Goomba final : public GameObject
 {
 public:
@@ -15,11 +16,13 @@ private:
 
 	physx::PxMaterial* m_pPhysxMat{};
 
-	ControllerComponent* m_pController;
+	ControllerComponent* m_pController{};
+	GameObject* m_pHitBox{};
 
 	float m_YRot{ 0 };
 
-	float m_MoveSpeed{ 10 };
+	float m_MoveSpeed{ 3 };
 
+	bool m_CanBeHit{ false };
 };
 

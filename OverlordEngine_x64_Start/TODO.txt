@@ -1,7 +1,5 @@
-Add shadows to entity and uber shaders,
-goomba movement + hitbox
 punch state for mario + check for goomba
-jump on goomba + rebound
+goomba rebound
 coin image for ui
 pause menu + buttons
 sfx to start menu,

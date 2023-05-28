@@ -16,18 +16,14 @@
 
 MarioScene::~MarioScene()
 {
-	for (UINT i{ 0 }; i < m_ClipCount; ++i)
-	{
-		delete[] m_ClipNames[i];
-	}
-
-	delete[] m_ClipNames;
 }
 
 void MarioScene::Initialize()
 {
 	m_SceneContext.settings.enableOnGUI = true;
 
+
+	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 
 	auto& physX = PxGetPhysics();
 	auto pMat = physX.createMaterial(.5f, .5f, 0);
@@ -119,10 +115,21 @@ void MarioScene::Update()
 	//	", " << m_pMario->GetTransform()->GetWorldPosition().z << '\n';
 	//
 
+	auto pMarioPos = m_pMario->GetTransform()->GetWorldPosition();
+	m_SceneContext.pLights->SetDirectionalLight(
+		{ pMarioPos.x - 95.6139526f * 0.05f , pMarioPos.y + 66.1346436f * 0.05f, pMarioPos.z - 41.1850471f * 0.05f },
+		{ 0.740129888f, -0.597205281f, 0.309117377f });
+
 	m_CoinsGotten = { "Nr of Coins " + std::to_string(m_NrCoinsPickedUp) };
 
 
 	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(m_CoinsGotten), m_CoinsGottenPosition, m_TextColor);
+}
+
+void MarioScene::PostDraw()
+{
+
+	ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
 }
 
 void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
@@ -140,17 +147,17 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 	characterDesc.actionId_MoveRight = CharacterMoveRight;
 	characterDesc.actionId_Jump = CharacterJump;
 
-	const auto pRoot = AddChild(new ThirdPersonCharacter(characterDesc));
+	m_pMario = AddChild(new ThirdPersonCharacter(characterDesc));
 
-	pRoot->SetTag(L"Mario");
+	m_pMario->SetTag(L"Mario");
 
 
-	const auto pModelObject = pRoot->AddChild(new GameObject());
+	const auto pModelObject = m_pMario->AddChild(new GameObject());
 
 	const auto pModel = pModelObject->AddComponent(new ModelComponent(L"Meshes/Mario/MarioModel/Mario.ovm"));
 	pModelObject->SetTag(L"Mario");
 
-	pRoot->SetModel(pModel);
+	m_pMario->SetModel(pModel);
 
 	pModel->SetMaterial(pMarioMat);
 
@@ -161,7 +168,7 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 
 	//Animation Block
 	m_pAnimator = pModel->GetAnimator();
-	pRoot->SetAnimator(m_pAnimator);
+	m_pMario->SetAnimator(m_pAnimator);
 
 	m_pAnimator->SetAnimation(m_AnimationClipId);
 	m_pAnimator->SetAnimationSpeed(m_AnimationSpeed);
@@ -173,7 +180,7 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 	m_pAnimator->Play();
 
 	//Animation Block
-	pRoot->GetTransform()->Translate(0, 5, 0);
+	m_pMario->GetTransform()->Translate(0, 5, 0);
 }
 
 void MarioScene::MakeBubbleEmitter(float x, float y, float z)

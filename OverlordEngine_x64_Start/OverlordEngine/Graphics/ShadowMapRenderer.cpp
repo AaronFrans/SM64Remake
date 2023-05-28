@@ -84,6 +84,7 @@ void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 
 	const auto directionLight{ XMLoadFloat4(&dirLight.direction) };
 	const auto positionLight{ XMLoadFloat4(&dirLight.position) };
+
 	const auto lightViewMatrix{ XMMatrixLookAtLH(positionLight, positionLight + directionLight, XMVECTOR{0.0f,1.0f,0.0f}) };
 
 	//3. Update this matrix (m_LightVP) on the ShadowMapMaterial effect

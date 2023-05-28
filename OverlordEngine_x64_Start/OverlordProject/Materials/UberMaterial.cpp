@@ -194,7 +194,7 @@ void UberMaterial::InitializeEffectVariables()
 
 	SetVariable_Vector(L"gColorSpecular", { 1, 1, 1, 1 });
 
-	SetVariable_Scalar(L"gUseTextureSpecularIntensity", true);
+	SetVariable_Scalar(L"gUseTextureSpecularIntensity", false);
 
 	SetVariable_Scalar(L"gShininess", 15);
 
@@ -212,7 +212,7 @@ void UberMaterial::InitializeEffectVariables()
 
 	SetVariable_Scalar(L"gFlipGreenChannel", false);
 
-	SetVariable_Scalar(L"gUseTextureNormal", true);
+	SetVariable_Scalar(L"gUseTextureNormal", false);
 
 	//Environment Mapping
 
@@ -244,8 +244,29 @@ void UberMaterial::InitializeEffectVariables()
 	SetVariable_Scalar(L"gTextureOpacityIntensity", false);
 
 	//Specular Models
-	SetVariable_Scalar(L"gUseSpecularPhong", true);
+	SetVariable_Scalar(L"gUseSpecularPhong", false);
 
-	SetVariable_Scalar(L"gUseSpecularBlinn", true);
+	SetVariable_Scalar(L"gUseSpecularBlinn", false);
 
+}
+
+void UberMaterial::OnUpdateModelVariables(const SceneContext& sceneContext, const ModelComponent* pModel) const
+{
+	const auto lightWVPMatrix{ XMLoadFloat4x4(&pModel->GetTransform()->GetWorld()) *
+							 XMLoadFloat4x4(&ShadowMapRenderer::Get()->GetLightVP()) };
+
+	XMFLOAT4X4 lightWVP;
+	XMStoreFloat4x4(&lightWVP, lightWVPMatrix);
+
+
+	SetVariable_Matrix(L"gWorldViewProj_Light", reinterpret_cast<const float*>(&lightWVP));
+
+
+	const auto pShadowMapRenderer = ShadowMapRenderer::Get();
+
+	SetVariable_Texture(L"gShadowMap", pShadowMapRenderer->GetShadowMap());
+
+
+
+	SetVariable_Vector(L"gLightDirection", sceneContext.pLights->GetDirectionalLight().direction);
 }

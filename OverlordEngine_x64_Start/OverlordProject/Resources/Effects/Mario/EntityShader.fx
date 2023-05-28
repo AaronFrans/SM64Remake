@@ -1,14 +1,30 @@
 float4x4 gWorld : WORLD;
 float4x4 gWorldViewProj : WORLDVIEWPROJECTION; 
 float3 gLightDirection = float3(-0.577f, -0.577f, 0.577f);
+float gShadowMapBias = 0.01f;
+
 
 Texture2D gDiffuseMap;
 Texture2D gOpacityMap;
+
+Texture2D gShadowMap;
+
 SamplerState samLinear
 {
     Filter = MIN_MAG_MIP_LINEAR;
     AddressU = Wrap;// or Mirror or Clamp or Border
     AddressV = Wrap;// or Mirror or Clamp or Border
+};
+
+SamplerComparisonState cmpSampler
+{
+	// sampler state
+	Filter = COMPARISON_MIN_MAG_MIP_LINEAR;
+	AddressU = MIRROR;
+	AddressV = MIRROR;
+
+	// sampler comparison state
+	ComparisonFunc = LESS_EQUAL;
 };
 
 RasterizerState Solid
@@ -28,6 +44,7 @@ struct VS_OUTPUT{
 	float3 normal : NORMAL;
 	float2 texCoord : TEXCOORD;
 	float4 color : COLOR;
+	float4 lPos : TEXCOORD1;
 };
 
 DepthStencilState EnableDepth
@@ -62,6 +79,55 @@ VS_OUTPUT VS(VS_INPUT input){
 	output.texCoord = input.texCoord;
 	return output;
 }
+
+
+
+float2 texOffset(int u, int v)
+{
+	//TODO: return offseted value (our shadow map has the following dimensions: 1280 * 720)
+	float offset = float2(u,v) / float2(1280,780);
+	return offset;
+}
+
+float EvaluateShadowMap(float4 lpos)
+{
+	lpos.xyz /= lpos.w;
+ 
+    //if position is not visible to the light - dont illuminate it
+    //results in hard light frustum
+    if( lpos.x < -1.0f || lpos.x > 1.0f ||
+        lpos.y < -1.0f || lpos.y > 1.0f ||
+        lpos.z < 0.0f  || lpos.z > 1.0f ) return 1.f;
+ 
+    //transform clip space coords to texture space coords (-1:1 to 0:1)
+    lpos.x = lpos.x / 2.f + 0.5f;
+    lpos.y = lpos.y /-2.f + 0.5f;
+	lpos.z -= gShadowMapBias;
+ 
+	//PCF sampling for shadow map
+    	float sum = 0.f;
+		int nrRuns = 2.f;
+    	float x = 0.f, y = 0.f;
+		int nrTexels = 0;
+ 
+    //perform PCF filtering on a 4 x 4 texel neighborhood
+    for (y = -nrRuns; y <= nrRuns; y += 0.5f)
+    {
+        for (x = -nrRuns; x <= nrRuns; x += 0.5f)
+        {
+            sum += gShadowMap.SampleCmpLevelZero( cmpSampler, lpos.xy + texOffset(x,y),lpos.z );
+			++nrTexels;
+        }
+    }
+	
+    //sample shadow map - point sampler
+    float shadowMapDepth = sum / nrTexels;
+
+    //if clip space z value greater than shadow map value then pixel is in shadow
+ 
+	return shadowMapDepth * 0.5f + 0.5f;
+}
+
 
 //--------------------------------------------------------------------------------------
 // Pixel Shader

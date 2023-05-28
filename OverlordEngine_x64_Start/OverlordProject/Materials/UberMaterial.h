@@ -62,6 +62,8 @@ public:
 protected:
 	void InitializeEffectVariables() override;
 
+	void OnUpdateModelVariables(const SceneContext&, const ModelComponent*)const override;
+
 private:
 	TextureData* m_pDiffuseTexture{ nullptr };
 	TextureData* m_pSpecularTexture{ nullptr };

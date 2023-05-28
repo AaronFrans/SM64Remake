@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ThirdPersonCharacter.h"
 
-ThirdPersonCharacter::ThirdPersonCharacter(const CharacterDesc& characterDesc) :
+ThirdPersonCharacter::ThirdPersonCharacter(const CharacterDesc& characterDesc, physx::PxMaterial* physicsMaterial) :
 	m_CharacterDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
 	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime)
@@ -17,7 +17,16 @@ void ThirdPersonCharacter::Initialize(const SceneContext& /*sceneContext*/)
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true); //Uncomment to make this camera the active camera
 
-	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, -10);
+	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, -20);
+
+
+	auto pPunchHitBox = AddChild(new GameObject);
+
+	auto pPunchRB = AddComponent(new RigidBodyComponent);
+	pPunchRB->SetKinematic(true);
+	PxVec3 scale{ 20, 5, 20 };
+	pPunchRB->AddCollider(PxBoxGeometry{ scale / 2.0f }, *m_pPhysicsMaterial, true);
+
 }
 
 void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
@@ -83,10 +92,10 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 		m_TotalPitch -= look.y * m_CharacterDesc.rotationSpeed * elapsedTime;
 		//Make sure this calculated on a framerate independent way and uses CharacterDesc::rotationSpeed.
 		//Rotate this character based on the TotalPitch (X) and TotalYaw (Y)
-
-
+		std::cout << "Pitch = " << m_TotalPitch << "\n";
+		m_TotalPitch = std::clamp(m_TotalPitch, -15.f, 50.f);
 		GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
-		m_pModelComponent->GetTransform()->Rotate(-m_TotalPitch, 180, 0);
+		m_pModelComponent->GetTransform()->Rotate(m_TotalPitch, 180, 0);
 
 
 

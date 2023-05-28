@@ -5,6 +5,7 @@ class UberMaterial;
 class Coin;
 class ParticleEmmiter;
 class PostUnderwater;
+class ThirdPersonCharacter;
 class MarioScene final : public GameScene
 {
 public:
@@ -21,6 +22,8 @@ protected:
 
 
 	void Update() override;
+
+	void PostDraw() override;
 private:
 
 
@@ -44,7 +47,7 @@ private:
 	void MakeUnderwater(physx::PxMaterial* physicsMaterial);
 
 	//Character
-	GameObject* m_pMario{};
+	ThirdPersonCharacter* m_pMario{};
 
 
 	//Underwater Volume
@@ -70,9 +73,6 @@ private:
 	int m_AnimationClipId{ 0 };
 	float m_AnimationSpeed{ 1.f };
 
-	char** m_ClipNames{};
-	UINT m_ClipCount{};
-
 
 	//Ui
 	SpriteFont* m_pFont{};
@@ -80,4 +80,7 @@ private:
 	std::string m_CoinsGotten{ "Nr of Coins %d", m_NrCoinsPickedUp };
 	XMFLOAT2 m_CoinsGottenPosition{};
 	XMFLOAT4 m_TextColor{ 189 / 255.0f, 183 / 255.0f, 107 / 255.0f, 1 };
+
+
+	float m_ShadowMapScale{ 0.3f };
 };

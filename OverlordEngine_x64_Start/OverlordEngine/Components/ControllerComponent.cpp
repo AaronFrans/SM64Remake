@@ -6,6 +6,11 @@ ControllerComponent::ControllerComponent(const PxCapsuleControllerDesc& controll
 {
 }
 
+ControllerComponent::~ControllerComponent()
+{
+	m_pController->release();
+}
+
 void ControllerComponent::Initialize(const SceneContext& /*sceneContext*/)
 {
 	if (!m_IsInitialized)
@@ -23,7 +28,7 @@ void ControllerComponent::Initialize(const SceneContext& /*sceneContext*/)
 		ASSERT_NULL(m_pController, L"Controller must exist");
 
 		m_pController->getActor()->userData = this;
-
+			
 		SetCollisionGroup(static_cast<CollisionGroup>(m_CollisionGroups.word0));
 		SetCollisionIgnoreGroup(static_cast<CollisionGroup>(m_CollisionGroups.word1));
 	}

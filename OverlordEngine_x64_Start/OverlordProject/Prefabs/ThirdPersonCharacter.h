@@ -34,7 +34,7 @@ struct CharacterDesc
 class ThirdPersonCharacter : public GameObject
 {
 public:
-	ThirdPersonCharacter(const CharacterDesc& characterDesc);
+	ThirdPersonCharacter(const CharacterDesc& characterDesc, physx::PxMaterial* physicsMaterial);
 	~ThirdPersonCharacter() override = default;
 
 	ThirdPersonCharacter(const ThirdPersonCharacter& other) = delete;
@@ -72,7 +72,7 @@ private:
 	XMFLOAT3 m_TotalVelocity{};						//TotalVelocity with X/Z for Horizontal Movement AND Y for Vertical Movement (fall/jump)
 	XMFLOAT3 m_CurrentDirection{};					//Current/Last Direction based on Camera forward/right (Stored for deacceleration)
 
-
+	physx::PxMaterial* m_pPhysicsMaterial{};
 
 	float m_MinCameraAngle{ 30 };
 	float m_MaxCameraAngle{ 70 };

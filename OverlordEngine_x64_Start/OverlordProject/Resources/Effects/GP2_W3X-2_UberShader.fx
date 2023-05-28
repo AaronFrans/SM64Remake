@@ -34,6 +34,8 @@ float4x4 gMatrixViewInverse : VIEWINVERSE;
 // The World Matrix
 float4x4 gMatrixWorld : WORLD;
 
+
+
 //STATES
 //******
 RasterizerState gRS_FrontCulling 
@@ -274,6 +276,26 @@ bool gUseLight
 > = false;
 
 
+//Shadow
+//***********
+
+Texture2D gShadowMap;
+float4x4 gWorldViewProj_Light;
+
+float gShadowMapBias = 0.01f;
+SamplerComparisonState cmpSampler
+{
+	// sampler state
+	Filter = COMPARISON_MIN_MAG_MIP_LINEAR;
+	AddressU = MIRROR;
+	AddressV = MIRROR;
+
+	// sampler comparison state
+	ComparisonFunc = LESS_EQUAL;
+};
+
+
+
 //VS IN & OUT
 //***********
 struct VS_Input
@@ -291,6 +313,7 @@ struct VS_Output
 	float3 Normal: NORMAL;
 	float3 Tangent: TANGENT;
 	float2 TexCoord: TEXCOORD0;
+	float4 lPos : TEXCOORD1;
 };
 
 float3 CalculateSpecularBlinn(float3 viewDirection, float3 normal, float2 texCoord)
@@ -439,8 +462,55 @@ VS_Output MainVS(VS_Input input) {
 	output.Normal = mul(input.Normal, (float3x3)gMatrixWorld);
 	output.Tangent = mul(input.Tangent, (float3x3)gMatrixWorld);
 	output.TexCoord = input.TexCoord;
+	output.lPos = mul(float4(input.Position, 1.0), gWorldViewProj_Light);
 	
 	return output;
+}
+
+float2 texOffset(int u, int v)
+{
+	//TODO: return offseted value (our shadow map has the following dimensions: 1280 * 720)
+	float offset = float2(u,v) / float2(1280,780);
+	return offset;
+}
+
+float EvaluateShadowMap(float4 lpos)
+{
+	lpos.xyz /= lpos.w;
+ 
+    //if position is not visible to the light - dont illuminate it
+    //results in hard light frustum
+    if( lpos.x < -1.0f || lpos.x > 1.0f ||
+        lpos.y < -1.0f || lpos.y > 1.0f ||
+        lpos.z < 0.0f  || lpos.z > 1.0f ) return 1.f;
+ 
+    //transform clip space coords to texture space coords (-1:1 to 0:1)
+    lpos.x = lpos.x / 2.f + 0.5f;
+    lpos.y = lpos.y /-2.f + 0.5f;
+	lpos.z -= gShadowMapBias;
+ 
+	//PCF sampling for shadow map
+    	float sum = 0.f;
+		int nrRuns = 1.0f;
+    	float x = 0.f, y = 0.f;
+		int nrTexels = 0;
+ 
+    //perform PCF filtering on a 4 x 4 texel neighborhood
+    for (y = -nrRuns; y <= nrRuns; y += 0.5f)
+    {
+        for (x = -nrRuns; x <= nrRuns; x += 0.5f)
+        {
+            sum += gShadowMap.SampleCmpLevelZero( cmpSampler, lpos.xy + texOffset(x,y),lpos.z );
+			++nrTexels;
+        }
+    }
+	
+    //sample shadow map - point sampler
+    float shadowMapDepth = sum / nrTexels;
+
+    //if clip space z value greater than shadow map value then pixel is in shadow
+ 
+	return shadowMapDepth * 0.5f + 0.5f;
 }
 
 // The main pixel shader
@@ -449,6 +519,9 @@ float4 MainPS(VS_Output input) : SV_TARGET {
 	//OPACITY
 	float opacity = CalculateOpacity(input.TexCoord);
 	clip(opacity - 0.1f);
+
+
+	float shadowValue = EvaluateShadowMap(input.lPos);
 
 	// NORMALIZE
 	input.Normal = normalize(input.Normal);
@@ -479,7 +552,7 @@ float4 MainPS(VS_Output input) : SV_TARGET {
 	
 
 	
-	return float4(finalColor, opacity);
+	return float4(finalColor * shadowValue, opacity);
 }
 
 // Default Technique
