@@ -196,12 +196,6 @@ void GameScene::RootDraw()
 	//Draw Debug Stuff
 	DebugRenderer::Draw(m_SceneContext);
 
-
-	//SpriteRenderer Draw
-	SpriteRenderer::Get()->Draw(m_SceneContext);
-
-	//TextRenderer Draw
-	TextRenderer::Get()->Draw(m_SceneContext);
 #pragma endregion
 
 
@@ -244,7 +238,13 @@ void GameScene::RootDraw()
 		//Done!
 	}
 #pragma endregion
+	//clear stencil
 
+	//SpriteRenderer Draw
+	SpriteRenderer::Get()->Draw(m_SceneContext);
+
+	//TextRenderer Draw
+	TextRenderer::Get()->Draw(m_SceneContext);
 }
 
 void GameScene::RootOnSceneActivated()

@@ -667,16 +667,13 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 void MarioScene::MakeUnderwater(physx::PxMaterial* physicsMaterial)
 {
 	auto pUnderwater = AddChild(new GameObject());
+	pUnderwater->SetTag(L"UnderWater");
 
 	PxVec3 scale{ 1000, 400, 1000 };
 	pUnderwater->GetTransform()->Scale(scale.x, scale.y, scale.z);
 
-	pUnderwater->GetTransform()->Rotate(4.532f, 0.001f, 1.611f);
+	pUnderwater->GetTransform()->Rotate(4.532f, 0.001f, 1.611f, false);
 	pUnderwater->GetTransform()->Translate(4.9f, -511.9f, 12.4f);
-	rot[0] = 4.532f;
-	rot[1] = 0.001f;
-	rot[2] = 1.611f;
-	PositionTemp = pUnderwater;
 
 	auto pUnderwaterRB = pUnderwater->AddComponent(new RigidBodyComponent());
 	pUnderwaterRB->SetKinematic(true);

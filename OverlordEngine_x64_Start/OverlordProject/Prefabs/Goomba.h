@@ -13,6 +13,13 @@ protected:
 
 private:
 
+	physx::PxMaterial* m_pPhysxMat{};
+
+	ControllerComponent* m_pController;
+
+	float m_YRot{ 0 };
+
+	float m_MoveSpeed{ 10 };
 
 };
 

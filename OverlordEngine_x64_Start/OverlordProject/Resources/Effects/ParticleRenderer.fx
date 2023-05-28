@@ -5,8 +5,8 @@ Texture2D gParticleTexture;
 SamplerState samPoint
 {
     Filter = MIN_MAG_MIP_POINT;
-    AddressU = WRAP;
-    AddressV = WRAP;
+    AddressU = Clamp;
+    AddressV = Clamp;
 };
 
 //STATES

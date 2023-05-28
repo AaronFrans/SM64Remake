@@ -11,6 +11,7 @@ goomba on kill -> smoke
 sprint
 backflip
 long jump
+skybox
 
 player health hud
 lives left hud

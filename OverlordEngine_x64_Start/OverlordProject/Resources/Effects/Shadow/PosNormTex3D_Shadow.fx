@@ -98,33 +98,35 @@ float EvaluateShadowMap(float4 lpos)
     //results in hard light frustum
     if( lpos.x < -1.0f || lpos.x > 1.0f ||
         lpos.y < -1.0f || lpos.y > 1.0f ||
-        lpos.z < 0.0f  || lpos.z > 1.0f ) return 1;
+        lpos.z < 0.0f  || lpos.z > 1.0f ) return 1.f;
  
     //transform clip space coords to texture space coords (-1:1 to 0:1)
-    lpos.x = lpos.x /2 + 0.5;
-    lpos.y = lpos.y /-2 + 0.5;
+    lpos.x = lpos.x / 2.f + 0.5f;
+    lpos.y = lpos.y /-2.f + 0.5f;
 	lpos.z -= gShadowMapBias;
  
 	//PCF sampling for shadow map
-    	float sum = 0;
-    	float x, y;
+    	float sum = 0.f;
+		int nrRuns = 2.f;
+    	float x = 0.f, y = 0.f;
+		int nrTexels = 0;
  
     //perform PCF filtering on a 4 x 4 texel neighborhood
-    for (y = -1.5; y <= 1.5; y += 1.0)
+    for (y = -nrRuns; y <= nrRuns; y += 0.5f)
     {
-        for (x = -1.5; x <= 1.5; x += 1.0)
+        for (x = -nrRuns; x <= nrRuns; x += 0.5f)
         {
             sum += gShadowMap.SampleCmpLevelZero( cmpSampler, lpos.xy + texOffset(x,y),lpos.z );
+			++nrTexels;
         }
     }
 	
     //sample shadow map - point sampler
-    float shadowMapDepth = sum / 16.0;
+    float shadowMapDepth = sum / nrTexels;
 
     //if clip space z value greater than shadow map value then pixel is in shadow
-    if ( shadowMapDepth < lpos.z) return 0.5;
  
-	return 1;
+	return shadowMapDepth * 0.5f + 0.5f;
 }
 
 //--------------------------------------------------------------------------------------

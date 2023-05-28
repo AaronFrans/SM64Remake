@@ -4,15 +4,15 @@
 TextRenderer::~TextRenderer()
 {
 	SafeRelease(m_pInputLayout)
-	SafeRelease(m_pVertexBuffer)
+		SafeRelease(m_pVertexBuffer)
 }
 
 void TextRenderer::Initialize()
 {
 	TODO_W7(L"Complete TextRenderer.fx")
 
-	//Effect
-	m_pEffect = ContentManager::Load<ID3DX11Effect>(L"Effects/TextRenderer.fx");
+		//Effect
+		m_pEffect = ContentManager::Load<ID3DX11Effect>(L"Effects/TextRenderer.fx");
 	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
 	EffectHelper::BuildInputLayout(m_GameContext.d3dContext.pDevice, m_pTechnique, &m_pInputLayout);
 
@@ -33,13 +33,13 @@ void TextRenderer::Initialize()
 }
 
 void TextRenderer::DrawText(SpriteFont* pFont, const std::wstring& text, const XMFLOAT2& position,
-                            const XMFLOAT4& color)
+	const XMFLOAT4& color)
 {
 	//skip if alpha is near 0
 	if (color.w <= 0.0001f)
 		return;
 
-	if(!m_TextRenderGroups.contains(pFont))
+	if (!m_TextRenderGroups.contains(pFont))
 	{
 		m_TextRenderGroups.insert(std::make_pair(pFont, TextRenderGroup{}));
 	}
@@ -68,7 +68,7 @@ void TextRenderer::Draw(const SceneContext& sceneContext)
 	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 	pDeviceContext->IASetInputLayout(m_pInputLayout);
 
-	for(const auto& pair : m_TextRenderGroups)
+	for (const auto& pair : m_TextRenderGroups)
 	{
 		//Set Texture
 		m_pEVar_TextureSRV->SetResource(pair.first->GetTexture()->GetShaderResourceView());
@@ -81,7 +81,7 @@ void TextRenderer::Draw(const SceneContext& sceneContext)
 
 		D3DX11_TECHNIQUE_DESC techDesc{};
 		m_pTechnique->GetDesc(&techDesc);
-		for(UINT i = 0; i < techDesc.Passes; ++i)
+		for (UINT i = 0; i < techDesc.Passes; ++i)
 		{
 			m_pTechnique->GetPassByIndex(i)->Apply(0, pDeviceContext);
 			pDeviceContext->Draw(pair.second.bufferSize, pair.second.bufferStart);
@@ -141,7 +141,7 @@ void TextRenderer::UpdateBuffer()
 void TextRenderer::CreateTextVertices(SpriteFont* pFont, const TextCache& textCache, VertexText* pBuffer, int& bufferPosition)
 {
 	int totalAdvanceX{ 0 };
-	for(const wchar_t& character: textCache.text)
+	for (const wchar_t& character : textCache.text)
 	{
 		if (!pFont->HasMetric(character))
 		{
@@ -151,7 +151,7 @@ void TextRenderer::CreateTextVertices(SpriteFont* pFont, const TextCache& textCa
 
 		const auto& metric = pFont->GetMetric(character);
 
-		if(character == L' ')
+		if (character == L' ')
 		{
 			totalAdvanceX += metric.advanceX;
 			continue;
@@ -160,7 +160,7 @@ void TextRenderer::CreateTextVertices(SpriteFont* pFont, const TextCache& textCa
 		VertexText vertex;
 		vertex.position.x = textCache.position.x + float(totalAdvanceX + metric.offsetX);
 		vertex.position.y = textCache.position.y + float(metric.offsetY);
-		vertex.position.z = .9f;
+		vertex.position.z = 0;
 		vertex.color = textCache.color;
 		vertex.texCoord = metric.texCoord;
 		vertex.characterDimension = { float(metric.width), float(metric.height) };
@@ -173,7 +173,7 @@ void TextRenderer::CreateTextVertices(SpriteFont* pFont, const TextCache& textCa
 	}
 
 
-	
+
 
 
 }

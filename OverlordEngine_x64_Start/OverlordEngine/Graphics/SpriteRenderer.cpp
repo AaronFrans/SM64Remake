@@ -217,7 +217,7 @@ void SpriteRenderer::DrawImmediate(const D3D11Context& d3dContext, ID3D11ShaderR
 	//Map Vertex
 	VertexSprite vertex{};
 	vertex.TextureId = 0;
-	vertex.TransformData = XMFLOAT4(position.x, position.y, 0, rotation);
+	vertex.TransformData = XMFLOAT4(position.x, position.y, 0.5f, rotation);
 	vertex.TransformData2 = XMFLOAT4(pivot.x, pivot.y, scale.x, scale.y);
 	vertex.Color = color;
 
