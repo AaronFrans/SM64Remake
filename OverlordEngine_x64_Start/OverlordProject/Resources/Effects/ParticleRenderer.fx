@@ -121,8 +121,9 @@ void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 float4 MainPS(GS_DATA input) : SV_TARGET {
 	
 	//Simple Texture Sampling
-	float4 result = gParticleTexture.Sample(samPoint,input.TexCoord);
-	return input.Color * result;
+	float4 color = input.Color * gParticleTexture.Sample(samPoint,input.TexCoord);
+	clip(color.a -0.1f);
+	return  color;
 }
 
 // Default Technique

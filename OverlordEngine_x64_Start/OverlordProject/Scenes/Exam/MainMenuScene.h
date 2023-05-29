@@ -19,7 +19,6 @@ protected:
 
 private:
 
-	GameObject* PositionTemp{};
 
 	std::vector<Button*> m_Buttons;
 

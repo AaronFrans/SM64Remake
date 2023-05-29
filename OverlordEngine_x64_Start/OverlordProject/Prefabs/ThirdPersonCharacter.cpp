@@ -1,11 +1,15 @@
 #include "stdafx.h"
 #include "ThirdPersonCharacter.h"
+#include "Goomba.h"
 
 ThirdPersonCharacter::ThirdPersonCharacter(const CharacterDesc& characterDesc, physx::PxMaterial* physicsMaterial) :
 	m_CharacterDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
-	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime)
-{}
+	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime),
+	m_pPhysicsMaterial{ physicsMaterial }
+{
+	m_CharacterDesc.actionId_Punch = characterDesc.actionId_Punch;
+}
 
 void ThirdPersonCharacter::Initialize(const SceneContext& /*sceneContext*/)
 {
@@ -16,16 +20,29 @@ void ThirdPersonCharacter::Initialize(const SceneContext& /*sceneContext*/)
 	const auto pCamera = AddChild(new FixedCamera());
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true); //Uncomment to make this camera the active camera
-
+	
 	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, -20);
 
 
-	auto pPunchHitBox = AddChild(new GameObject);
+	m_pPunchBox = AddChild(new GameObject);
 
-	auto pPunchRB = AddComponent(new RigidBodyComponent);
+	auto pPunchRB = m_pPunchBox->AddComponent(new RigidBodyComponent);
 	pPunchRB->SetKinematic(true);
-	PxVec3 scale{ 20, 5, 20 };
+	PxVec3 scale{ 3, 2, 3 };
+
 	pPunchRB->AddCollider(PxBoxGeometry{ scale / 2.0f }, *m_pPhysicsMaterial, true);
+
+	m_pPunchBox->SetOnTriggerCallBack([&](GameObject*, GameObject* pOther, PxTriggerAction action) {
+		if (!m_IsPunching)
+			return;
+
+		if (action == PxTriggerAction::ENTER && pOther->GetTag() == L"Goomba")
+		{
+			auto pGoomba = static_cast<Goomba*>(pOther);
+			pGoomba->SetDeath();
+		}
+
+		});
 
 }
 
@@ -37,6 +54,27 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 
 		//***************
 		//HANDLE INPUT
+		const auto& elapsedTime = sceneContext.pGameTime->GetElapsed();
+
+		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Punch) && !m_IsPunching)
+		{
+			m_IsPunching = true;
+			m_pModelAnimator->SetAnimation(L"Punching");
+		}
+
+
+
+		if (m_IsPunching)
+		{
+			m_CurPunchTime += elapsedTime;
+			if (m_CurPunchTime > PUNCH_TIME)
+			{
+				m_IsPunching = false;
+				m_CurPunchTime = 0;
+			}
+		}
+
+
 
 		//## Input Gathering (move)
 		XMFLOAT2 move{ 0,0 };
@@ -78,21 +116,19 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 		//GATHERING TRANSFORM INFO
 
 		//Retrieve the TransformComponent
-		const auto pTransform = GetTransform();
+		const auto pTransform = m_pCameraComponent->GetTransform();
 		//Retrieve the forward & right vector (as XMVECTOR) from the TransformComponent
 		const XMVECTOR forward = XMLoadFloat3(&pTransform->GetForward()),
 			right = XMLoadFloat3(&pTransform->GetRight());
 
 		//***************
 		//CAMERA ROTATION
-		const auto& elapsedTime = sceneContext.pGameTime->GetElapsed();
 
 		//Adjust the TotalYaw (m_TotalYaw) & TotalPitch (m_TotalPitch) based on the local 'look' variable
 		m_TotalYaw += look.x * m_CharacterDesc.rotationSpeed * elapsedTime;
 		m_TotalPitch -= look.y * m_CharacterDesc.rotationSpeed * elapsedTime;
 		//Make sure this calculated on a framerate independent way and uses CharacterDesc::rotationSpeed.
 		//Rotate this character based on the TotalPitch (X) and TotalYaw (Y)
-		std::cout << "Pitch = " << m_TotalPitch << "\n";
 		m_TotalPitch = std::clamp(m_TotalPitch, -15.f, 50.f);
 		GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
 		m_pModelComponent->GetTransform()->Rotate(m_TotalPitch, 180, 0);
@@ -109,13 +145,13 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 		if (move.x != 0 || move.y != 0)
 		{
 			//Calculate & Store the current direction (m_CurrentDirection) >> based on the forward/right vectors and the pressed input
-
 			XMStoreFloat3(&m_CurrentDirection, { forward * move.y + right * move.x });
+
 			//Increase the current MoveSpeed with the current Acceleration (m_MoveSpeed)
 			//Make sure the current MoveSpeed stays below the maximum MoveSpeed (CharacterDesc::maxMoveSpeed)
 			m_MoveSpeed = std::min(m_MoveSpeed + curMoveAccel, m_CharacterDesc.maxMoveSpeed);
 
-			if (m_TotalVelocity.y == 0)
+			if (m_TotalVelocity.y == 0 && !m_IsPunching)
 			{
 
 				m_pModelAnimator->SetAnimation(L"Running");
@@ -152,7 +188,10 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 		else if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Jump)) {
 			//Set m_TotalVelocity.y equal to CharacterDesc::JumpSpeed
 			m_TotalVelocity.y = m_CharacterDesc.JumpSpeed;
-			m_pModelAnimator->SetAnimation(L"Jumping");
+			if (!m_IsPunching)
+			{
+				m_pModelAnimator->SetAnimation(L"Jumping");
+			}
 
 		}
 		//Else (=Character is grounded, no input pressed)
@@ -165,7 +204,8 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 		}
 
 
-		if (m_MoveSpeed == 0 && m_TotalVelocity.y == 0)
+		if (m_MoveSpeed == 0 && m_TotalVelocity.y == 0
+			&& !m_IsPunching)
 		{
 			m_pModelAnimator->SetAnimation(L"Idle");
 		}
@@ -187,7 +227,19 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 
 		//The above is a simple implementation of Movement Dynamics, adjust the code to further improve the movement logic and behaviour.
 		//Also, it can be usefull to use a seperate RayCast to check if the character is grounded (more responsive)
+
+		//Move Hitbox
+		auto playerPos = m_pControllerComponent->GetPosition();
+		XMFLOAT3 moveDir{};
+		XMStoreFloat3(&moveDir, { forward * 1.5f + right * 0 });
+		m_pPunchBox->GetTransform()->Translate(playerPos.x + moveDir.x, playerPos.y, playerPos.z + moveDir.z);
+
+
+		m_pPunchBox->GetTransform()->Rotate(0, m_TotalYaw, 0);
 	}
+
+
+
 }
 
 void ThirdPersonCharacter::DrawImGui()
@@ -248,6 +300,11 @@ void ThirdPersonCharacter::SetModel(ModelComponent* modelComponent)
 void ThirdPersonCharacter::SetAnimator(ModelAnimator* modelAnimator)
 {
 	m_pModelAnimator = modelAnimator;
+}
+
+void ThirdPersonCharacter::Jump()
+{
+	m_TotalVelocity.y = m_CharacterDesc.JumpSpeed;
 }
 
 const FixedCamera* ThirdPersonCharacter::GetCamera()

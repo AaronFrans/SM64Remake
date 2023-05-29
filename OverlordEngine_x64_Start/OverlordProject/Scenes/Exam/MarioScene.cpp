@@ -6,6 +6,8 @@
 #include "Materials/UberMaterial.h"
 #include "Materials/ColorMaterial.h"
 #include "Materials/Mario/Post/PostUnderwater.h"
+#include "Materials/Post/PostBlur.h"
+#include "Materials/Mario/SkyboxMaterial.h"
 
 
 #include "Prefabs/Door.h"
@@ -13,6 +15,7 @@
 #include "Prefabs/ParticleEmmiter.h"
 #include "Prefabs/CubePrefab.h"
 #include "Prefabs/Goomba.h"
+#include "Prefabs/Button.h"
 
 MarioScene::~MarioScene()
 {
@@ -26,29 +29,33 @@ void MarioScene::Initialize()
 	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 
 	auto& physX = PxGetPhysics();
-	auto pMat = physX.createMaterial(.5f, .5f, 0);
+	pDefaultPhysxMat = physX.createMaterial(.5f, .5f, 0);
+
+	//Skybox
+	MakeSkybox();
 
 	//Mario
-	MakeMario(pMat);
+	MakeMario(pDefaultPhysxMat);
 
-	MakeUnderwater(pMat);
+	MakeUnderwater(pDefaultPhysxMat);
 
 	//Coins
-	MakeCoin(10, 10, 0, pMat);
-	MakeCoin(-10, 10, 0, pMat);
+	MakeCoin(10, 10, 0, pDefaultPhysxMat);
+	MakeCoin(-10, 10, 0, pDefaultPhysxMat);
 
 
-	auto pGoomb = AddChild(new Goomba(pMat));
-	pGoomb->GetTransform()->Translate(0, 10, 0);
+
+	//Goombas
+	MakeGoomba(0, 10, 0, pDefaultPhysxMat);
 
 	//Level
-	MakeLevel(pMat);
+	MakeLevel(pDefaultPhysxMat);
 
-	auto door = AddChild(new Door(pMat));
+	auto door = AddChild(new Door(pDefaultPhysxMat));
 	door->GetTransform()->Translate(52.514f, -12.258f, -146.816f);
 	door->GetTransform()->Rotate(96, -50, -27.5f);
 
-	auto door2 = AddChild(new Door(pMat));
+	auto door2 = AddChild(new Door(pDefaultPhysxMat));
 	door2->GetTransform()->Translate(52.702f, -12.16f, -146.689f);
 	door2->GetTransform()->Rotate(115.9f, 161.1f, 9.3f);
 
@@ -69,11 +76,19 @@ void MarioScene::Initialize()
 	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
+	inputAction = InputAction(CharacterPunch, InputState::pressed, 'F', -1, XINPUT_GAMEPAD_A);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(PauseGame, InputState::pressed, VK_ESCAPE, -1, XINPUT_GAMEPAD_A);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
 
 	//Bubbles
 	MakeBubbleEmitter(178.521f, -12.1922f, -118.9f);
 
+	MakeUI();
 
+	MakePauseMenu();
 
 	m_pFont = ContentManager::Load<SpriteFont>(L"SpriteFonts/Mario/Mario64.fnt");
 }
@@ -110,26 +125,29 @@ void MarioScene::OnGUI()
 
 void MarioScene::Update()
 {
-	//std::cout << "Mario at: " << m_pMario->GetTransform()->GetWorldPosition().x <<
-	//	", " << m_pMario->GetTransform()->GetWorldPosition().y <<
-	//	", " << m_pMario->GetTransform()->GetWorldPosition().z << '\n';
-	//
+	if (InputManager::IsMouseButton(InputState::pressed, VK_LBUTTON))
+	{
+		auto mousePos = InputManager::GetMousePosition();
+		for (auto button : m_Buttons)
+		{
+			button->OnClicked(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+		}
+	}
+
+	if (m_SceneContext.pInput->IsActionTriggered(PauseGame) && !m_IsPaused)
+		Pause();
 
 	auto pMarioPos = m_pMario->GetTransform()->GetWorldPosition();
 	m_SceneContext.pLights->SetDirectionalLight(
 		{ pMarioPos.x - 95.6139526f * 0.05f , pMarioPos.y + 66.1346436f * 0.05f, pMarioPos.z - 41.1850471f * 0.05f },
 		{ 0.740129888f, -0.597205281f, 0.309117377f });
 
-	m_CoinsGotten = { "Nr of Coins " + std::to_string(m_NrCoinsPickedUp) };
-
-
-	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(m_CoinsGotten), m_CoinsGottenPosition, m_TextColor);
+	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode("X" + std::to_string(m_NrCoinsPickedUp)), m_CoinsGottenPosition, m_TextColor);
 }
 
 void MarioScene::PostDraw()
 {
-
-	ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
+	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
 }
 
 void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
@@ -146,8 +164,9 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
 	characterDesc.actionId_MoveRight = CharacterMoveRight;
 	characterDesc.actionId_Jump = CharacterJump;
+	characterDesc.actionId_Punch = CharacterPunch;
 
-	m_pMario = AddChild(new ThirdPersonCharacter(characterDesc));
+	m_pMario = AddChild(new ThirdPersonCharacter(characterDesc, pPhysicsMaterial));
 
 	m_pMario->SetTag(L"Mario");
 
@@ -204,8 +223,17 @@ void MarioScene::MakeBubbleEmitter(float x, float y, float z)
 
 void MarioScene::MakeCoin(float x, float y, float z, physx::PxMaterial* pPhysicsMaterial)
 {
-	auto pCoin = AddChild(new Coin(pPhysicsMaterial, &m_NrCoinsPickedUp));
+	auto pCoin = AddChild(new Coin(pPhysicsMaterial, &m_NrCoinsPickedUp, m_Coins));
+	m_Coins.emplace_back(pCoin);
 	pCoin->GetTransform()->Translate(x, y, z);
+}
+
+void MarioScene::MakeGoomba(float x, float y, float z, physx::PxMaterial* physicsMaterial)
+{
+	auto pGoomba = AddChild(new Goomba(physicsMaterial, m_pMario, m_Goombas));
+
+	m_Goombas.emplace_back(pGoomba);
+	pGoomba->GetTransform()->Translate(x, y, z);
 }
 
 void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
@@ -708,5 +736,106 @@ void MarioScene::MakeUnderwater(physx::PxMaterial* physicsMaterial)
 		}
 
 		});
+}
+
+void MarioScene::MakeUI()
+{
+	auto pHead = AddChild(new GameObject);
+	pHead->AddComponent(new SpriteComponent(L"Textures/Mario/GameUI/CoinHUD.png"));
+	pHead->GetTransform()->Translate(m_SceneContext.windowWidth - 100, 15, 0);
+	m_CoinsGottenPosition = { m_SceneContext.windowWidth - 70, 12.5f };
+
+}
+
+void MarioScene::MakePauseMenu()
+{
+	m_pPostBlur = MaterialManager::Get()->CreateMaterial<PostBlur>();
+
+
+	auto pResume = AddChild(new Button(L"Textures/Mario/Menu/Resume.png", [&]() { Resume(); }));
+	pResume->GetTransform()->Translate(290, 550, 0.5f);
+	m_Buttons.emplace_back(pResume);
+
+	m_PauseMenuSprites.emplace_back(pResume->GetComponent<SpriteComponent>());
+	m_PauseMenuSprites.back()->SetActive(false);
+
+
+	auto pQuit = AddChild(new Button(L"Textures/Mario/Menu/Quit.png", [&]() { OverlordGame::Quit(); }));
+	pQuit->GetTransform()->Translate(820, 550, 0.5f);
+	m_Buttons.emplace_back(pQuit);
+
+	m_PauseMenuSprites.emplace_back(pQuit->GetComponent<SpriteComponent>());
+	m_PauseMenuSprites.back()->SetActive(false);
+
+	auto pRestart = AddChild(new Button(L"Textures/Mario/Menu/Restart.png", [&]() { Reset(); }));
+	pRestart->GetTransform()->Translate(550, 230, 0.5f);
+	m_Buttons.emplace_back(pRestart);
+
+	m_PauseMenuSprites.emplace_back(pRestart->GetComponent<SpriteComponent>());
+	m_PauseMenuSprites.back()->SetActive(false);
+
+}
+
+void MarioScene::Pause()
+{
+
+	AddPostProcessingEffect(m_pPostBlur);
+	for (auto& sprite : m_PauseMenuSprites)
+	{
+		sprite->SetActive(true);
+	}
+	m_SceneContext.pGameTime->Stop();
+	m_IsPaused = true;
+}
+
+void MarioScene::Resume()
+{
+	RemovePostProcessingEffect(m_pPostBlur);
+	for (auto& sprite : m_PauseMenuSprites)
+	{
+		sprite->SetActive(false);
+	}
+	m_IsPaused = false;
+
+	m_SceneContext.pGameTime->Start();
+}
+
+void MarioScene::MakeSkybox()
+{
+	const auto pSkyBoxMat = MaterialManager::Get()->CreateMaterial<SkyboxMaterial>();
+	pSkyBoxMat->SetDiffuseTexture(L"Textures/Mario/Skybox/Skybox.jpg");
+
+	const auto pSkyboxGO = AddChild(new GameObject);
+	pSkyboxGO->GetTransform()->Scale(1000);
+	const auto pSkyboxModel = pSkyboxGO->AddComponent(new ModelComponent(L"Meshes/Sphere.ovm"));
+	pSkyboxModel->SetMaterial(pSkyBoxMat);
+}
+
+void MarioScene::Reset()
+{
+
+	m_pMario->GetTransform()->Translate(0, 5, 0);
+
+	for (auto& coin : m_Coins)
+	{
+		RemoveChild(coin, true);
+	}
+	m_Coins.clear();
+
+	MakeCoin(10, 10, 0, pDefaultPhysxMat);
+	MakeCoin(-10, 10, 0, pDefaultPhysxMat);
+
+
+	for (auto& goomba : m_Goombas)
+	{
+		RemoveChild(goomba, true);
+	}
+	m_Goombas.clear();
+
+	MakeGoomba(0, 10, 0, pDefaultPhysxMat);
+
+
+	m_NrCoinsPickedUp = 0;
+	Resume();
 }
 

@@ -4,9 +4,10 @@
 #include "Materials/ColorMaterial.h"
 #include "Prefabs/ParticleEmmiter.h"
 
-Coin::Coin(physx::PxMaterial* physicsMaterial, unsigned* coinCounter)
+Coin::Coin(physx::PxMaterial* physicsMaterial, unsigned* coinCounter, std::vector<Coin*>& owningCollection)
 	: m_pPhysicsMaterial{ physicsMaterial }
 	, m_pCoinCounter{ coinCounter }
+	, m_OwningVec{ owningCollection }
 
 {
 }
@@ -33,18 +34,39 @@ void Coin::Initialize(const SceneContext&)
 
 	pCoinModel->SetMaterial(pCoinMat);
 
+	auto pCoinCollider = m_pRB->GetCollider(m_ColliderId);
+	pCoinCollider.SetTrigger(true);
+
+
+	SetOnTriggerCallBack([&](GameObject*, GameObject* pOther, PxTriggerAction action) {
+
+		if (!m_CanBeHit || m_WasHit)
+			return;
+
+		if (action != PxTriggerAction::ENTER && pOther->GetTag() == L"Mario")
+			return;
+
+		std::cout << "hit";
+
+		m_WasHit = true;
+
+		*m_pCoinCounter += 1;
+
+		});
+
 
 }
 
 void Coin::Update(const SceneContext& sceneContext)
 {
 	constexpr int minWaitTime{ 1 };
-
-	if (sceneContext.pGameTime->GetTotal() < minWaitTime)
+	const auto elapsed = sceneContext.pGameTime->GetElapsed();
+	m_TimeSinceSpawm += elapsed;
+	if (m_TimeSinceSpawm < minWaitTime)
 		return;
 
 	constexpr float coinsRotationSpeed{ 120 };
-	m_CoinRotation += coinsRotationSpeed * sceneContext.pGameTime->GetElapsed();
+	m_CoinRotation += coinsRotationSpeed * elapsed;
 
 	m_CanBeHit = true;
 
@@ -77,6 +99,7 @@ void Coin::Update(const SceneContext& sceneContext)
 
 	if (m_pEmmiter && m_pEmmiter->IsDone())
 	{
+		m_OwningVec.erase(std::remove(begin(m_OwningVec), end(m_OwningVec), this));
 		SceneManager::Get()->GetActiveScene()->RemoveChild(this, true);
 	}
 
@@ -86,23 +109,5 @@ void Coin::Update(const SceneContext& sceneContext)
 
 void Coin::PostInitialize(const SceneContext&)
 {
-	auto pCoinCollider = m_pRB->GetCollider(m_ColliderId);
-	pCoinCollider.SetTrigger(true);
 
-
-	SetOnTriggerCallBack([&](GameObject*, GameObject* pOther, PxTriggerAction action) {
-
-		if (!m_CanBeHit || m_WasHit)
-			return;
-
-		if (action != PxTriggerAction::ENTER && pOther->GetTag() == L"Mario")
-			return;
-
-		std::cout << "hit";
-
-		m_WasHit = true;
-
-		*m_pCoinCounter += 1;
-
-		});
 }

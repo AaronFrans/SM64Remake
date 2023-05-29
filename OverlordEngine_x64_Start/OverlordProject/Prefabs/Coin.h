@@ -3,7 +3,7 @@ class ParticleEmmiter;
 class Coin final : public GameObject
 {
 public:
-	Coin(physx::PxMaterial* physicsMaterial, unsigned* coinCounter);
+	Coin(physx::PxMaterial* physicsMaterial, unsigned* coinCounter, std::vector<Coin*>& owningCollection);
 
 protected:
 
@@ -31,5 +31,8 @@ private:
 	unsigned* m_pCoinCounter{};
 
 	float m_CoinRotation{ 0 };
+	float m_TimeSinceSpawm{ 0 };
+
+	std::vector<Coin*>& m_OwningVec;
 };
 

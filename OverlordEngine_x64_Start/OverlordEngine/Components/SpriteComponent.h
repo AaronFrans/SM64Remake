@@ -19,6 +19,9 @@ public:
 	void SetColor(const XMFLOAT4& color) { m_Color = color; }
 	void SetTexture(const std::wstring& spriteAsset);
 
+	void SetActive(bool isActive) { m_IsActive = isActive; };
+	bool IsActive() { return m_IsActive; };
+
 	XMFLOAT2 GetDimensions();
 
 protected:
@@ -30,4 +33,6 @@ private:
 	std::wstring m_SpriteAsset{};
 	XMFLOAT2 m_Pivot{};
 	XMFLOAT4 m_Color{};
+
+	bool m_IsActive{ true };
 };

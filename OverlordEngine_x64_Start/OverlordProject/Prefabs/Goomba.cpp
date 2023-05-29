@@ -2,10 +2,18 @@
 #include "Goomba.h"
 
 #include "Materials/UberMaterial.h"
+#include "ThirdPersonCharacter.h"
 
-Goomba::Goomba(physx::PxMaterial* physicsMaterial)
-	:m_pPhysxMat{ physicsMaterial }
+Goomba::Goomba(physx::PxMaterial* physicsMaterial, ThirdPersonCharacter* pMario, std::vector<Goomba*>& owningCollection)
+	: m_pPhysxMat{ physicsMaterial }
+	, m_pMario{ pMario }
+	, m_OwningVec{ owningCollection }
 {
+}
+
+void Goomba::SetDeath()
+{
+	m_HasDied = true;
 }
 
 void Goomba::Initialize(const SceneContext&)
@@ -67,6 +75,10 @@ void Goomba::Initialize(const SceneContext&)
 
 void Goomba::Update(const SceneContext& sceneContext)
 {
+
+	if (!sceneContext.pGameTime->IsRunning())
+		return;
+
 	constexpr float minWaitTime{ 0.3f };
 
 	if (sceneContext.pGameTime->GetTotal() < minWaitTime)
@@ -75,9 +87,16 @@ void Goomba::Update(const SceneContext& sceneContext)
 	m_CanBeHit = true;
 	if (m_pController->GetCollisionFlags() & PxControllerCollisionFlag::eCOLLISION_UP)
 	{
+		//TODO: figure out why jump sometimes fails
+		m_pMario->Jump();
+		m_OwningVec.erase(std::remove(begin(m_OwningVec), end(m_OwningVec), this));
 		SceneManager::Get()->GetActiveScene()->RemoveChild(this, true);
 		return;
-
+	}
+	else if (m_HasDied)
+	{
+		SceneManager::Get()->GetActiveScene()->RemoveChild(this, true);
+		return;
 	}
 
 

@@ -29,7 +29,9 @@ struct CharacterDesc
 	int actionId_MoveForward{ -1 };
 	int actionId_MoveBackward{ -1 };
 	int actionId_Jump{ -1 };
+	int actionId_Punch{ -1 };
 };
+
 
 class ThirdPersonCharacter : public GameObject
 {
@@ -50,6 +52,8 @@ public:
 	void SetModel(ModelComponent* modelComponent);
 	void SetAnimator(ModelAnimator* modelAnimator);
 
+	void Jump();
+
 	const FixedCamera* GetCamera();
 
 protected:
@@ -62,6 +66,8 @@ private:
 
 	ModelComponent* m_pModelComponent{};
 	ModelAnimator* m_pModelAnimator{};
+
+	GameObject* m_pPunchBox{};
 
 	CharacterDesc m_CharacterDesc;
 	float m_TotalPitch{}, m_TotalYaw{};				//Total camera Pitch(X) and Yaw(Y) rotation
@@ -76,5 +82,11 @@ private:
 
 	float m_MinCameraAngle{ 30 };
 	float m_MaxCameraAngle{ 70 };
+
+	bool m_IsPunching{ false };
+
+	const static int PUNCH_TIME{ 1 };
+
+	float m_CurPunchTime{ 0 };
 };
 

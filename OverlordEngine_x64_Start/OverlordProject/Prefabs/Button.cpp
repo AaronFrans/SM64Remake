@@ -10,6 +10,10 @@ Button::Button(std::wstring texturePath, const std::function<void()> func)
 
 void Button::OnClicked(float xPos, float yPos)
 {
+
+	if (!m_pTexture->IsActive())
+		return;
+
 	const auto pos = GetTransform()->GetWorldPosition();
 	const auto dimensions = m_pTexture->GetDimensions();
 	if (xPos >= pos.x && xPos <= pos.x + dimensions.x &&

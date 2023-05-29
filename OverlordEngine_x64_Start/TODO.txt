@@ -1,21 +1,19 @@
-punch state for mario + check for goomba
-goomba rebound
-coin image for ui
 pause menu + buttons
+skybox
+goomba on kill -> smoke
 sfx to start menu,
 sfx to all states,
 coin pick up sfx,
-goomba on kill -> smoke
 sprint
 backflip
 long jump
-skybox
 
 player health hud
 lives left hud
 
 controller controls
 
+fix goomba shadows
 
 Main menu:
     -> buttons first

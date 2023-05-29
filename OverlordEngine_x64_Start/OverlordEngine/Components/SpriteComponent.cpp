@@ -25,7 +25,7 @@ XMFLOAT2 SpriteComponent::GetDimensions()
 
 void SpriteComponent::Draw(const SceneContext& sceneContext)
 {
-	if (!m_pTexture)
+	if (!m_pTexture || !m_IsActive)
 		return;
 
 	TransformComponent* pObjectTrans = GetGameObject()->GetTransform();
