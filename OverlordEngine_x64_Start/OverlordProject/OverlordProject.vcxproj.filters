@@ -48,6 +48,8 @@
     <ClCompile Include="Prefabs\Goomba.cpp" />
     <ClCompile Include="Materials\Mario\SkyboxMaterial.cpp" />
     <ClCompile Include="Scenes\Exam\DeathScene.cpp" />
+    <ClCompile Include="Materials\Mario\FlowingWater.cpp" />
+    <ClCompile Include="Scenes\Exam\VictoryScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -96,5 +98,7 @@
     <ClInclude Include="Prefabs\Goomba.h" />
     <ClInclude Include="Materials\Mario\SkyboxMaterial.h" />
     <ClInclude Include="Scenes\Exam\DeathScene.h" />
+    <ClInclude Include="Materials\Mario\FlowingWater.h" />
+    <ClInclude Include="Scenes\Exam\VictoryScene.h" />
   </ItemGroup>
 </Project>

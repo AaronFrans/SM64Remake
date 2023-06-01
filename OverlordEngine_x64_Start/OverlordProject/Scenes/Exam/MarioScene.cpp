@@ -8,6 +8,7 @@
 #include "Materials/Mario/Post/PostUnderwater.h"
 #include "Materials/Post/PostBlur.h"
 #include "Materials/Mario/SkyboxMaterial.h"
+#include "Materials/Mario/FlowingWater.h"
 
 
 #include "Prefabs/Door.h"
@@ -62,6 +63,7 @@ void MarioScene::Initialize()
 
 	//Goombas
 	MakeGoomba(20, 10, 20, m_pDefaultPhysxMat);
+	MakeGoomba(0, 10, 0, m_pDefaultPhysxMat);
 
 	//Level
 	MakeLevel();
@@ -157,6 +159,12 @@ void MarioScene::Update()
 
 	}
 
+	if (m_NrTotalCoins == m_NrCoinsPickedUp)
+	{
+		Reset();
+		SceneManager::Get()->SetActiveGameScene(L"VictoryScene");
+	}
+
 	if (InputManager::IsMouseButton(InputState::pressed, VK_LBUTTON) && m_IsPaused)
 	{
 		auto mousePos = InputManager::GetMousePosition();
@@ -184,7 +192,7 @@ void MarioScene::Update()
 
 void MarioScene::PostDraw()
 {
-	ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
+	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
 }
 
 void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
@@ -262,6 +270,7 @@ void MarioScene::MakeCoin(float x, float y, float z, physx::PxMaterial* pPhysics
 	auto pCoin = AddChild(new Coin(pPhysicsMaterial, &m_NrCoinsPickedUp, m_Coins));
 	m_Coins.emplace_back(pCoin);
 	pCoin->GetTransform()->Translate(x, y, z);
+	++m_NrTotalCoins;
 }
 
 void MarioScene::MakeGoomba(float x, float y, float z, physx::PxMaterial* physicsMaterial)
@@ -684,11 +693,13 @@ void MarioScene::MakeLevel()
 
 
 	//Water
-	auto pWaterMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
+	auto pWaterMat = MaterialManager::Get()->CreateMaterial<FlowingWater>();
 	pWaterMat->SetDiffuseTexture(L"Textures/Mario/Castle/Water.png");
 	pWaterMat->SetUseNormalMaps(false);
 	pWaterMat->SetUseSpecularTexture(false);
 	pWaterMat->SetOpacityIntensity(0.75f);
+	pWaterMat->SetFlowDir({ 0.5,0.5 });
+	pWaterMat->SetPerlinValues(L"Textures/Mario/Water/perlin.png", 0.001f, 0.01f);
 
 	const auto pWater = pCastleRoot->AddChild(new GameObject());
 
@@ -710,16 +721,16 @@ void MarioScene::MakeLevel()
 	m_pDebugMat = pWaterMat;
 
 	//Waterfall
-	auto pWaterfallMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
+	auto pWaterfallMat = MaterialManager::Get()->CreateMaterial<FlowingWater>();
 	pWaterfallMat->SetDiffuseTexture(L"Textures/Mario/Castle/Water.png");
 	pWaterfallMat->SetUseNormalMaps(false);
 	pWaterfallMat->SetUseSpecularTexture(false);
 	pWaterfallMat->SetOpacityIntensity(0.75f);
+	pWaterfallMat->SetFlowDir({ 2.5,0 });
 
 	const auto pWaterfall = pCastleRoot->AddChild(new GameObject());
 	const auto pWaterfallModel = pWaterfall->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Waterfall.ovm"));
 	pWaterfall->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
-
 
 	//const auto pWaterfallMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Waterfall.ovpt");
 
@@ -870,15 +881,18 @@ void MarioScene::MakeSkybox()
 
 void MarioScene::Reset()
 {
+	m_pMario->ResetCamera();
 	m_pMario->GetTransform()->Translate(0, 5, 0);
 
 	for (auto& goomba : m_Goombas)
 	{
 		RemoveChild(goomba, true);
 	}
+
 	m_Goombas.clear();
 
 	MakeGoomba(20, 10, 20, m_pDefaultPhysxMat);
+	MakeGoomba(0, 10, 0, m_pDefaultPhysxMat);
 
 	for (auto& coin : m_Coins)
 	{

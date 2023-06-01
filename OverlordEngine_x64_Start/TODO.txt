@@ -1,10 +1,7 @@
-lives left hud
-
-Win screen -> Pick up all coins
-
-sfx to start menu,
+sfx to buttons,
 sfx to all states,
 coin pick up sfx,
+music to menus and game
 
 sprint
 backflip
@@ -13,7 +10,7 @@ long jump
 
 controller controls
 
-fix goomba shadows
+fix goomba shadows and goomba on reset
 
 Main menu:
     -> buttons first

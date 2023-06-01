@@ -57,6 +57,8 @@ public:
 	void Damage();
 	bool IsDamaged() { return m_IsDamaged; };
 
+	void ResetCamera() { m_TotalPitch = 0; m_TotalYaw = 0; };
+
 	const FixedCamera* GetCamera();
 
 protected:

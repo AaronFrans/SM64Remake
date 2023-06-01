@@ -165,6 +165,11 @@ void BaseMaterial::SetVariable_MatrixArray(const std::wstring& varName, const fl
 	Logger::LogWarning(L"Shader variable \'{}\' not found for \'{}\'", varName, GetEffectName());
 }
 
+void BaseMaterial::SetVariable_Vector(const std::wstring& varName, XMFLOAT2 vector) const
+{
+	SetVariable_Vector(varName, &vector.x);
+}
+
 void BaseMaterial::SetVariable_Vector(const std::wstring& varName, XMFLOAT3 vector) const
 {
 	SetVariable_Vector(varName, &vector.x);

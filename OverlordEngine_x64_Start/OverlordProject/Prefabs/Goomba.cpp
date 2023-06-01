@@ -76,17 +76,13 @@ void Goomba::Initialize(const SceneContext&)
 		}
 		});
 
-
-
-
 }
 
 void Goomba::Update(const SceneContext& sceneContext)
 {
+
 	if (!sceneContext.pGameTime->IsRunning())
 		return;
-
-	
 
 	if (m_pEmmiter)
 	{
@@ -134,6 +130,7 @@ void Goomba::Update(const SceneContext& sceneContext)
 
 
 	auto forward = GetTransform()->GetForward();
+	std::cout << "Forward X: " << forward.x << " Forward y: " << forward.y << " Forward z: " << forward.z << '\n';
 
 	const float elapsed = sceneContext.pGameTime->GetElapsed();
 	const float moveDistance = elapsed * m_MoveSpeed;

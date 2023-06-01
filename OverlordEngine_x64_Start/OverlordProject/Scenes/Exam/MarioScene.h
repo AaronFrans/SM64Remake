@@ -9,6 +9,7 @@ class ThirdPersonCharacter;
 class ParticleEmmiter;
 class PostUnderwater;
 class PostBlur;
+class FlowingWater;
 class MarioScene final : public GameScene
 {
 public:
@@ -81,7 +82,7 @@ private:
 
 
 	//Current Material Being Debugged
-	UberMaterial* m_pDebugMat{};
+	FlowingWater* m_pDebugMat{};
 
 	//Current GameObject Being Debugged
 	GameObject* PositionTemp{};
@@ -114,6 +115,7 @@ private:
 
 
 	//Coins
+	unsigned m_NrTotalCoins{};
 	unsigned m_NrCoinsPickedUp{};
 	std::string m_CoinsGotten{ "Nr of Coins %d", m_NrCoinsPickedUp };
 	XMFLOAT2 m_CoinsGottenPosition{};

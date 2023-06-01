@@ -59,6 +59,7 @@ void Coin::Initialize(const SceneContext&)
 
 void Coin::Update(const SceneContext& sceneContext)
 {
+
 	constexpr int minWaitTime{ 1 };
 	const auto elapsed = sceneContext.pGameTime->GetElapsed();
 	m_TimeSinceSpawm += elapsed;

@@ -79,6 +79,7 @@
 #include "Scenes/Exam/MainMenuScene.h"
 #include "Scenes/Exam/MarioScene.h"
 #include "Scenes/Exam/DeathScene.h"
+#include "Scenes/Exam/VictoryScene.h"
 
 #pragma endregion
 
@@ -161,6 +162,7 @@ void MainGame::Initialize()
 	SceneManager::Get()->AddGameScene(new MainMenuScene());
 	SceneManager::Get()->AddGameScene(new MarioScene());
 	SceneManager::Get()->AddGameScene(new DeathScene());
+	SceneManager::Get()->AddGameScene(new VictoryScene());
 }
 
 LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam, LPARAM lParam)
