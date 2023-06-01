@@ -7,16 +7,40 @@
 
 #include "Scenes/Exam/MarioScene.h"
 
-Goomba::Goomba(physx::PxMaterial* physicsMaterial, ThirdPersonCharacter* pMario, std::vector<Goomba*>& owningCollection)
+Goomba::Goomba(physx::PxMaterial* physicsMaterial, ThirdPersonCharacter* pMario)
 	: m_pPhysxMat{ physicsMaterial }
 	, m_pMario{ pMario }
-	, m_OwningVec{ owningCollection }
 {
 }
 
 void Goomba::SetDeath()
 {
 	m_HasDied = true;
+}
+
+void Goomba::Reset()
+{
+	m_YRot = 0;
+	m_TimeSinceSpawm = 0;
+
+	m_HasDied = false;
+	m_CanBeHit = false;
+
+	GetTransform()->Translate(m_OriginalPos.x, m_OriginalPos.y, m_OriginalPos.z);
+	m_pMesh->GetTransform()->Translate(0, -1.3f, 0);
+
+	if (m_pController)
+	{
+		RemoveComponent(m_pController, true);
+	}
+
+	PxCapsuleControllerDesc controller{};
+	controller.setToDefault();
+	controller.radius = 1.5f;
+	controller.height = 0.7f;
+	controller.material = m_pPhysxMat;
+
+	m_pController = AddComponent(new ControllerComponent({ controller }));
 }
 
 void Goomba::Initialize(const SceneContext&)
@@ -81,6 +105,9 @@ void Goomba::Initialize(const SceneContext&)
 void Goomba::Update(const SceneContext& sceneContext)
 {
 
+
+	
+
 	if (!sceneContext.pGameTime->IsRunning())
 		return;
 
@@ -88,11 +115,15 @@ void Goomba::Update(const SceneContext& sceneContext)
 	{
 		if (m_pEmmiter->IsDone())
 		{
-			m_OwningVec.erase(std::remove(begin(m_OwningVec), end(m_OwningVec), this));
-			m_OwningScene->RemoveChild(this, true);
+			RemoveChild(m_pEmmiter, true);
+			m_pEmmiter = nullptr;
+			GetTransform()->Translate(-10000, -10000, -10000);
 		}
 		return;
 	}
+
+	if (!m_pController)
+		return;
 
 	constexpr float minWaitTime{ 0.3f };
 
@@ -170,8 +201,9 @@ void Goomba::MakeParticleEmmiter()
 
 	m_pEmmiter = AddChild(new ParticleEmmiter(L"Textures/Mario/Goomba/Smoke.png", settings, 50));
 
-	RemoveChild(m_pMesh, true);
+	m_pMesh->GetTransform()->Translate(-1000, -1000, -1000);
 	RemoveComponent(m_pController, true);
+	m_pController = nullptr;
 
 
 }

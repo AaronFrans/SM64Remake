@@ -10,7 +10,7 @@ long jump
 
 controller controls
 
-fix goomba shadows and goomba on reset
+fix goomba shadows
 
 Main menu:
     -> buttons first
@@ -20,3 +20,7 @@ Particles:
 
 Font:
  -> Have Arno there
+
+
+
+ LOL game counter = 73

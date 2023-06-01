@@ -128,4 +128,8 @@ private:
 	bool m_IsPaused{ false };
 
 	float m_ShadowMapScale{ 0.3f };
+
+
+	float m_LightOffset[3]{ 0, 0,0 };
+	XMFLOAT4 m_LightDirection{};
 };

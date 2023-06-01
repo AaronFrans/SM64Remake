@@ -20,6 +20,7 @@ void MainMenuScene::Initialize()
 
 	auto pStart = AddChild(new Button(L"Textures/Mario/Menu/Start.png",
 		[&]() {
+			m_pChannel2D->stop();
 			SceneManager::Get()->SetActiveGameScene(L"MarioScene");
 		}));
 	m_Buttons.emplace_back(pStart);
@@ -37,6 +38,10 @@ void MainMenuScene::Initialize()
 	pBG->AddComponent(new SpriteComponent(L"Textures/Mario/Menu/Main Menu.png"));
 	pBG->GetTransform()->Translate(0, 0, 0.9f);
 
+	const auto pFmod = SoundManager::Get()->GetSystem();
+	FMOD::Sound* pSound2D{ nullptr };
+	auto result = pFmod->createStream("Resources/Sounds/Mario/MainMenu.mp3", FMOD_2D | FMOD_LOOP_NORMAL, nullptr, &pSound2D);
+	result = pFmod->playSound(pSound2D, nullptr, false, &m_pChannel2D);
 
 }
 

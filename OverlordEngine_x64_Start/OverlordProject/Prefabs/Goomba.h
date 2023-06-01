@@ -8,10 +8,13 @@ class Goomba final : public GameObject
 {
 public:
 
-	Goomba(physx::PxMaterial* physicsMaterial, ThirdPersonCharacter* pMario, std::vector<Goomba*>& owningCollection);
+	Goomba(physx::PxMaterial* physicsMaterial, ThirdPersonCharacter* pMario);
 
 
 	void SetDeath();
+
+	void Reset();
+	void SetInitPos(const PxVec3& pos) { m_OriginalPos = pos; };
 
 protected:
 
@@ -38,11 +41,10 @@ private:
 	float m_YRot{ 0 };
 
 	float m_TimeSinceSpawm{ 0 };
-
+	PxVec3 m_OriginalPos{};
 	float m_MoveSpeed{ 3 };
 
 	bool m_CanBeHit{ false };
 	bool m_HasDied{ false };
-	std::vector<Goomba*>& m_OwningVec;
 };
 

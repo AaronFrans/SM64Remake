@@ -21,7 +21,7 @@ float4 ShadowMapVS(float3 position:POSITION):SV_POSITION
 {
 	//TODO: return the position of the vertex in correct space (hint: seen from the view of the light)
 
-	return mul(float4(position,0), mul(gWorld, gLightViewProj));
+	return mul(float4(position,1), mul(gWorld, gLightViewProj));
 }
 
 //--------------------------------------------------------------------------------------

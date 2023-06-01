@@ -49,6 +49,9 @@ void MarioScene::Initialize()
 	m_pDefaultPhysxMat = physX.createMaterial(.5f, .5f, 0);
 	m_pSlipperyPhysxMat = physX.createMaterial(0.0f, 0.0f, 0);
 
+	ShadowMapRenderer::Get()->SetFarPlane(100);
+	ShadowMapRenderer::Get()->SetNearPlane(-5);
+
 	//Skybox
 	MakeSkybox();
 
@@ -138,13 +141,32 @@ void MarioScene::OnGUI()
 		PositionTemp->GetTransform()->Rotate(rot[0], rot[1], rot[2], rot[3]);
 	}
 
+
+	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
+
+	float value = ShadowMapRenderer::Get()->GetFarPlane();
+	ImGui::DragFloat("Far", &value, 100.f, -1000, 1000);
+	ShadowMapRenderer::Get()->SetFarPlane(value);
+	
+	value = ShadowMapRenderer::Get()->GetNearPlane();
+	ImGui::DragFloat("Near", &value, 0.1f, -1000, 1000);
+	ShadowMapRenderer::Get()->SetNearPlane(value);
+
+	ImGui::DragFloat3("Offset", m_LightOffset, 0.1f, -2000, 2000);
+
+	m_LightDirection = m_SceneContext.pLights->GetDirectionalLight().direction;
+	float dir[4]{ m_LightDirection.x, m_LightDirection.y, m_LightDirection.z, m_LightDirection.w };
+	ImGui::DragFloat4("Direction", dir, 0.1f, -1000, 1000);
+	m_SceneContext.pLights->GetDirectionalLight().direction = XMFLOAT4{ dir[0], dir[1], dir[2], dir[3] };
+
+
 }
 
 void MarioScene::OnSceneActivated()
 {
 	m_NrOfLives = 3;
 
-	
+
 }
 
 void MarioScene::Update()
@@ -182,9 +204,7 @@ void MarioScene::Update()
 
 	auto pMarioPos = m_pMario->GetTransform()->GetWorldPosition();
 
-	m_SceneContext.pLights->SetDirectionalLight(
-		{ pMarioPos.x - 95.6139526f * 0.05f , pMarioPos.y + 66.1346436f * 0.05f, pMarioPos.z - 41.1850471f * 0.05f },
-		{ 0.740129888f, -0.597205281f, 0.309117377f });
+	m_SceneContext.pLights->GetDirectionalLight().position = { pMarioPos.x + m_LightOffset[0] , pMarioPos.y + m_LightOffset[1], pMarioPos.z + m_LightOffset[2], 0 };
 
 	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode("X" + std::to_string(m_NrCoinsPickedUp)), m_CoinsGottenPosition, m_TextColor);
 	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode("X" + std::to_string(m_NrOfLives)), m_LivesLeftPosition, m_TextColor);
@@ -192,7 +212,7 @@ void MarioScene::Update()
 
 void MarioScene::PostDraw()
 {
-	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
+	ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
 }
 
 void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
@@ -275,9 +295,10 @@ void MarioScene::MakeCoin(float x, float y, float z, physx::PxMaterial* pPhysics
 
 void MarioScene::MakeGoomba(float x, float y, float z, physx::PxMaterial* physicsMaterial)
 {
-	auto pGoomba = AddChild(new Goomba(physicsMaterial, m_pMario, m_Goombas));
+	auto pGoomba = AddChild(new Goomba(physicsMaterial, m_pMario));
 	m_Goombas.emplace_back(pGoomba);
 	pGoomba->GetTransform()->Translate(x, y, z);
+	pGoomba->SetInitPos({ x, y, z });
 }
 
 void MarioScene::MakeLevel()
@@ -699,11 +720,11 @@ void MarioScene::MakeLevel()
 	pWaterMat->SetUseSpecularTexture(false);
 	pWaterMat->SetOpacityIntensity(0.75f);
 	pWaterMat->SetFlowDir({ 0.5,0.5 });
-	pWaterMat->SetPerlinValues(L"Textures/Mario/Water/perlin.png", 0.001f, 0.01f);
+	pWaterMat->SetPerlinValues(L"Textures/Mario/Water/perlin.png", 0.010f, 0.6f);
 
 	const auto pWater = pCastleRoot->AddChild(new GameObject());
 
-	const auto pWaterModel = pWater->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Water.ovm"));
+	const auto pWaterModel = pWater->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Water.ovm", false));
 	pWater->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
 
 
@@ -729,7 +750,7 @@ void MarioScene::MakeLevel()
 	pWaterfallMat->SetFlowDir({ 2.5,0 });
 
 	const auto pWaterfall = pCastleRoot->AddChild(new GameObject());
-	const auto pWaterfallModel = pWaterfall->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Waterfall.ovm"));
+	const auto pWaterfallModel = pWaterfall->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/Waterfall.ovm", false));
 	pWaterfall->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
 
 	//const auto pWaterfallMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Waterfall.ovpt");
@@ -884,15 +905,11 @@ void MarioScene::Reset()
 	m_pMario->ResetCamera();
 	m_pMario->GetTransform()->Translate(0, 5, 0);
 
+
 	for (auto& goomba : m_Goombas)
 	{
-		RemoveChild(goomba, true);
+		goomba->Reset();
 	}
-
-	m_Goombas.clear();
-
-	MakeGoomba(20, 10, 20, m_pDefaultPhysxMat);
-	MakeGoomba(0, 10, 0, m_pDefaultPhysxMat);
 
 	for (auto& coin : m_Coins)
 	{

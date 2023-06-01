@@ -20,6 +20,8 @@ protected:
 private:
 
 
+	FMOD::Channel* m_pChannel2D{ nullptr };
+
 	std::vector<Button*> m_Buttons;
 
 };

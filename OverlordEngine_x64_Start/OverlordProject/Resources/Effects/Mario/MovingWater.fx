@@ -419,7 +419,7 @@ VS_Output MainVS(VS_Input input) {
 	
 	if(gUsePerlin)
 	{
-		float2 noiseUV = float2(input.Position.x * gTime, input.Position.y * gPerlinScale * gTime);
+		float2 noiseUV = float2(input.Position.xy * gTime * gPerlinScale);
 		float noiseValue = gRandomnessTexture.SampleLevel(gTextureSampler, noiseUV, 0).r * gPerlinAmplitude;
 	
 		float3 offset = (0,0,noiseValue);
