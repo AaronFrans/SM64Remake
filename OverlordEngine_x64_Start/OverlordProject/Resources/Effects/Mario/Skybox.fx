@@ -1,83 +1,74 @@
-float4x4 gWorldViewProj : WORLDVIEWPROJECTION; 
-
-Texture2D gDiffuseMap;
-
 SamplerState samLinear
 {
     Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = Wrap;// or Mirror or Clamp or Border
-    AddressV = Wrap;// or Mirror or Clamp or Border
+    AddressU = Wrap;
+    AddressV = Wrap;
 };
 
+TextureCube m_CubeMap : CubeMap;
 
-float4x4 gWorldViewProj_Light;
-
-struct VS_INPUT{
-	float3 pos : POSITION;
-	float2 texCoord : TEXCOORD;
-};
-
-struct VS_OUTPUT{
-	float4 pos : SV_POSITION;
-	float2 texCoord : TEXCOORD0;
-	float4 lPos: TEXCOORD1;
-};
-
-DepthStencilState EnableDepth
+cbuffer cbChangesEveryFrame
 {
-	DepthEnable = true;
-	DepthWriteMask = ALL;
-	DepthFunc = LESS_EQUAL;
+	matrix matWorldViewProj : WorldViewProjection;
+}
+
+struct VS_IN
+{
+	float3 posL : POSITION;
 };
 
-RasterizerState NoCulling
+struct VS_OUT
 {
-	FillMode = SOLID;
-	CullMode = NONE;
-};
-
-BlendState NoBlending
-{
-	BlendEnable[0] = FALSE;
+	float4 posH : SV_POSITION;
+	float3 texC : TEXCOORD;
 };
 
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
-VS_OUTPUT VS(VS_INPUT input){
+VS_OUT VS( VS_IN vIn )
+{
 
-	VS_OUTPUT output;
+	VS_OUT vOut = (VS_OUT)0;
 
-	output.lPos = mul(float4(input.pos, 1.0), gWorldViewProj_Light).xyww;
+	// set z = w so that z/w = 1 (i.e., skydome always on far plane).
+	vOut.posH = mul( float4(vIn.posL,0.0f), matWorldViewProj).xyww;
 
-	output.pos = mul(float4(input.pos, 1.0f), gWorldViewProj);
-	output.texCoord = input.texCoord;
+	// use local vertex position as cubemap lookup vector
+	vOut.texC = vIn.posL;
 
-	return output;
+	return vOut;
+}
+//--------------------------------------------------------------------------------------
+// Pixel XMeshShader
+//--------------------------------------------------------------------------------------
+float4 PS( VS_OUT pIn): SV_Target
+{
+	return m_CubeMap.Sample(samLinear, pIn.texC);
 }
 
-//--------------------------------------------------------------------------------------
-// Pixel Shader
-//--------------------------------------------------------------------------------------
-float4 PS(VS_OUTPUT input) : SV_TARGET{
-	float4 color = gDiffuseMap.Sample( samLinear,input.texCoord );
-	return float4( color );
-}
-	
+RasterizerState NoCull
+{
+	CullMode = NONE;
+};
 
-//--------------------------------------------------------------------------------------
-// Technique
-//--------------------------------------------------------------------------------------
-technique11 Default
+DepthStencilState LessEqualDSS
+{
+	// Make sure the depth function is LESS_EQUAL and not just LESS.
+    // Otherwise, the normalized depth values at z = 1 (NDC) will
+    // fail the depth test if the depth buffer was cleared to 1.
+	DepthFunc = LESS_EQUAL;
+};
+
+
+technique10 Render
 {
     pass P0
     {
-		SetRasterizerState(NoCulling);
-		SetDepthStencilState(EnableDepth, 0);
-		SetBlendState(NoBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
-
-		SetVertexShader( CompileShader( vs_4_0, VS() ) );
-		SetGeometryShader( NULL );
-		SetPixelShader( CompileShader( ps_4_0, PS() ) );
+        SetVertexShader( CompileShader( vs_4_0, VS() ) );
+        SetGeometryShader( NULL );
+        SetPixelShader( CompileShader( ps_4_0, PS() ) );
+		SetRasterizerState(NoCull);
+		SetDepthStencilState(LessEqualDSS,0);
     }
 }

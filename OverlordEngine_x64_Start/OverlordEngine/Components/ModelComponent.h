@@ -21,10 +21,15 @@ public:
 	ModelAnimator* GetAnimator() const { return m_pAnimator; }
 	bool HasAnimator() const { return m_pAnimator != nullptr; }
 
-	void DrawPost(bool value) { 
-		m_DrawPost = value; 
+	void DrawPost(bool value) {
+		m_DrawPost = value;
 		m_enablePostDraw = value;
 	};
+
+	void DrawShadows(bool value) { m_CastShadows = value; };
+
+	bool IsAcive() { return m_IsActive; };
+	void SetActive(bool isActive) { m_IsActive = isActive; };
 
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
@@ -52,4 +57,6 @@ private:
 	bool m_CastShadows{ true };
 
 	bool m_DrawPost{ false };
+
+	bool m_IsActive{ true };
 };

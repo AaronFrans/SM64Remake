@@ -21,41 +21,56 @@ MarioScene::~MarioScene()
 {
 }
 
+void MarioScene::RemoveHealth()
+{
+	if (m_pMario->IsDamaged())
+		return;
+
+	if (m_pHearts.size() == 0)
+	{
+		m_IsDead = true;
+		return;
+	}
+	m_pHeartsHud->RemoveChild(m_pHearts.back(), true);
+	m_pHearts.pop_back();
+
+
+	m_pMario->Damage();
+}
+
 void MarioScene::Initialize()
 {
 	m_SceneContext.settings.enableOnGUI = true;
 
-
 	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 
 	auto& physX = PxGetPhysics();
-	pDefaultPhysxMat = physX.createMaterial(.5f, .5f, 0);
+	m_pDefaultPhysxMat = physX.createMaterial(.5f, .5f, 0);
+	m_pSlipperyPhysxMat = physX.createMaterial(0.0f, 0.0f, 0);
 
 	//Skybox
 	MakeSkybox();
 
 	//Mario
-	MakeMario(pDefaultPhysxMat);
+	MakeMario(m_pDefaultPhysxMat);
 
-	MakeUnderwater(pDefaultPhysxMat);
+	MakeUnderwater(m_pDefaultPhysxMat);
 
 	//Coins
-	MakeCoin(10, 10, 0, pDefaultPhysxMat);
-	MakeCoin(-10, 10, 0, pDefaultPhysxMat);
-
-
+	MakeCoin(10, 10, 0, m_pDefaultPhysxMat);
+	MakeCoin(-10, 10, 0, m_pDefaultPhysxMat);
 
 	//Goombas
-	MakeGoomba(0, 10, 0, pDefaultPhysxMat);
+	MakeGoomba(20, 10, 20, m_pDefaultPhysxMat);
 
 	//Level
-	MakeLevel(pDefaultPhysxMat);
+	MakeLevel();
 
-	auto door = AddChild(new Door(pDefaultPhysxMat));
+	auto door = AddChild(new Door(m_pDefaultPhysxMat));
 	door->GetTransform()->Translate(52.514f, -12.258f, -146.816f);
 	door->GetTransform()->Rotate(96, -50, -27.5f);
 
-	auto door2 = AddChild(new Door(pDefaultPhysxMat));
+	auto door2 = AddChild(new Door(m_pDefaultPhysxMat));
 	door2->GetTransform()->Translate(52.702f, -12.16f, -146.689f);
 	door2->GetTransform()->Rotate(115.9f, 161.1f, 9.3f);
 
@@ -123,9 +138,26 @@ void MarioScene::OnGUI()
 
 }
 
+void MarioScene::OnSceneActivated()
+{
+	m_NrOfLives = 3;
+
+	
+}
+
 void MarioScene::Update()
 {
-	if (InputManager::IsMouseButton(InputState::pressed, VK_LBUTTON))
+
+	if (m_IsDead)
+	{
+		Reset();
+		m_NrOfLives--;
+		if (m_NrOfLives == -1)
+			SceneManager::Get()->SetActiveGameScene(L"DeathScene");
+
+	}
+
+	if (InputManager::IsMouseButton(InputState::pressed, VK_LBUTTON) && m_IsPaused)
 	{
 		auto mousePos = InputManager::GetMousePosition();
 		for (auto button : m_Buttons)
@@ -134,20 +166,25 @@ void MarioScene::Update()
 		}
 	}
 
+
 	if (m_SceneContext.pInput->IsActionTriggered(PauseGame) && !m_IsPaused)
 		Pause();
+	else if (m_SceneContext.pInput->IsActionTriggered(PauseGame) && m_IsPaused)
+		Resume();
 
 	auto pMarioPos = m_pMario->GetTransform()->GetWorldPosition();
+
 	m_SceneContext.pLights->SetDirectionalLight(
 		{ pMarioPos.x - 95.6139526f * 0.05f , pMarioPos.y + 66.1346436f * 0.05f, pMarioPos.z - 41.1850471f * 0.05f },
 		{ 0.740129888f, -0.597205281f, 0.309117377f });
 
 	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode("X" + std::to_string(m_NrCoinsPickedUp)), m_CoinsGottenPosition, m_TextColor);
+	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode("X" + std::to_string(m_NrOfLives)), m_LivesLeftPosition, m_TextColor);
 }
 
 void MarioScene::PostDraw()
 {
-	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
+	ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
 }
 
 void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
@@ -169,7 +206,6 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 	m_pMario = AddChild(new ThirdPersonCharacter(characterDesc, pPhysicsMaterial));
 
 	m_pMario->SetTag(L"Mario");
-
 
 	const auto pModelObject = m_pMario->AddChild(new GameObject());
 
@@ -231,12 +267,11 @@ void MarioScene::MakeCoin(float x, float y, float z, physx::PxMaterial* pPhysics
 void MarioScene::MakeGoomba(float x, float y, float z, physx::PxMaterial* physicsMaterial)
 {
 	auto pGoomba = AddChild(new Goomba(physicsMaterial, m_pMario, m_Goombas));
-
 	m_Goombas.emplace_back(pGoomba);
 	pGoomba->GetTransform()->Translate(x, y, z);
 }
 
-void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
+void MarioScene::MakeLevel()
 {
 	const auto pCastleRoot = AddChild(new GameObject());
 	auto pRootTransform = pCastleRoot->GetTransform();
@@ -255,7 +290,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pGrass1Mesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Grass1.ovpt");
 
 	auto pGrass1RB = pGrass1->AddComponent(new RigidBodyComponent(true));
-	pGrass1RB->AddCollider(PxTriangleMeshGeometry{ pGrass1Mesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pGrass1RB->AddCollider(PxTriangleMeshGeometry{ pGrass1Mesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 	pGrass1Model->SetMaterial(pGrass1Mat);
 
 
@@ -274,7 +309,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pGrass2Mesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Grass2.ovpt");
 
 	auto pGrass2RB = pGrass2->AddComponent(new RigidBodyComponent(true));
-	pGrass2RB->AddCollider(PxTriangleMeshGeometry{ pGrass2Mesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pGrass2RB->AddCollider(PxTriangleMeshGeometry{ pGrass2Mesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pGrass2Model->SetMaterial(pGrass2Mat);
 
@@ -293,7 +328,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pSandMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Sand.ovpt");
 
 	auto pSandRB = pSand->AddComponent(new RigidBodyComponent(true));
-	pSandRB->AddCollider(PxTriangleMeshGeometry{ pSandMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pSandRB->AddCollider(PxTriangleMeshGeometry{ pSandMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pSandModel->SetMaterial(pSandMat);
 
@@ -312,8 +347,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pBridgeWalkWayMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/BridgeWalkWay.ovpt");
 
 	auto pBridgeWalkWayRB = pBridgeWalkWay->AddComponent(new RigidBodyComponent(true));
-	pBridgeWalkWayRB->AddCollider(PxTriangleMeshGeometry{ pBridgeWalkWayMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
-
+	pBridgeWalkWayRB->AddCollider(PxTriangleMeshGeometry{ pBridgeWalkWayMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 	pBridgeWalkWayModel->SetMaterial(pBridgeWalkWayMat);
 
 	//Details
@@ -330,7 +364,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pDetailsMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Details.ovpt");
 
 	auto pDetailsRB = pDetails->AddComponent(new RigidBodyComponent(true));
-	pDetailsRB->AddCollider(PxTriangleMeshGeometry{ pDetailsMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pDetailsRB->AddCollider(PxTriangleMeshGeometry{ pDetailsMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pDetailsModel->SetMaterial(pDetailsMat);
 
@@ -350,7 +384,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pFencesMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Fences.ovpt");
 
 	auto pFencesRB = pFences->AddComponent(new RigidBodyComponent(true));
-	pFencesRB->AddCollider(PxTriangleMeshGeometry{ pFencesMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pFencesRB->AddCollider(PxTriangleMeshGeometry{ pFencesMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pFencesModel->SetMaterial(pFencesMat);
 
@@ -371,7 +405,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pGratesMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Grates.ovpt");
 
 	auto pGratesRB = pGrates->AddComponent(new RigidBodyComponent(true));
-	pGratesRB->AddCollider(PxTriangleMeshGeometry{ pGratesMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pGratesRB->AddCollider(PxTriangleMeshGeometry{ pGratesMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pGratesModel->SetMaterial(pGratesMat);
 
@@ -389,7 +423,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pRocksMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Rocks.ovpt");
 
 	auto pRocksRB = pRocks->AddComponent(new RigidBodyComponent(true));
-	pRocksRB->AddCollider(PxTriangleMeshGeometry{ pRocksMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pRocksRB->AddCollider(PxTriangleMeshGeometry{ pRocksMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pSlipperyPhysxMat);
 
 	pRocksModel->SetMaterial(pRocksMat);
 
@@ -408,7 +442,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pRocksUnderWaterMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/RocksUnderWater.ovpt");
 
 	auto pRocksUnderWaterRB = pRocksUnderWater->AddComponent(new RigidBodyComponent(true));
-	pRocksUnderWaterRB->AddCollider(PxTriangleMeshGeometry{ pRocksUnderWaterMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pRocksUnderWaterRB->AddCollider(PxTriangleMeshGeometry{ pRocksUnderWaterMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pSlipperyPhysxMat);
 
 	pRocksUnderWaterModel->SetMaterial(pRocksUnderWaterMat);
 
@@ -426,7 +460,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pUnderWaterSandMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/UnderWaterSand.ovpt");
 
 	auto pUnderWaterSandRB = pUnderWaterSand->AddComponent(new RigidBodyComponent(true));
-	pUnderWaterSandRB->AddCollider(PxTriangleMeshGeometry{ pUnderWaterSandMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pUnderWaterSandRB->AddCollider(PxTriangleMeshGeometry{ pUnderWaterSandMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pUnderWaterSandModel->SetMaterial(pUnderWaterSandMat);
 
@@ -445,7 +479,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pCobbleMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Cobble.ovpt");
 
 	auto pCobbleRB = pCobble->AddComponent(new RigidBodyComponent(true));
-	pCobbleRB->AddCollider(PxTriangleMeshGeometry{ pCobbleMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pCobbleRB->AddCollider(PxTriangleMeshGeometry{ pCobbleMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pCobbleModel->SetMaterial(pCobbleMat);
 
@@ -463,7 +497,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pBouldersMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Boulders.ovpt");
 
 	auto pBouldersRB = pBoulders->AddComponent(new RigidBodyComponent(true));
-	pBouldersRB->AddCollider(PxTriangleMeshGeometry{ pBouldersMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pBouldersRB->AddCollider(PxTriangleMeshGeometry{ pBouldersMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pSlipperyPhysxMat);
 
 	pBouldersModel->SetMaterial(pBouldersMat);
 
@@ -485,7 +519,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pWindowsMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Windows.ovpt");
 
 	auto pWindowsRB = pWindows->AddComponent(new RigidBodyComponent(true));
-	pWindowsRB->AddCollider(PxTriangleMeshGeometry{ pWindowsMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pWindowsRB->AddCollider(PxTriangleMeshGeometry{ pWindowsMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pWindowsModel->SetMaterial(pWindowsMat);
 
@@ -505,7 +539,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pUnderWaterBricksMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/UnderWaterBricks.ovpt");
 
 	auto pUnderWaterBricksRB = pUnderWaterBricks->AddComponent(new RigidBodyComponent(true));
-	pUnderWaterBricksRB->AddCollider(PxTriangleMeshGeometry{ pUnderWaterBricksMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pUnderWaterBricksRB->AddCollider(PxTriangleMeshGeometry{ pUnderWaterBricksMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pUnderWaterBricksModel->SetMaterial(pUnderWaterBricksMat);
 
@@ -525,7 +559,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pCastleMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Castle.ovpt");
 
 	auto pCastleRB = pCastle->AddComponent(new RigidBodyComponent(true));
-	pCastleRB->AddCollider(PxTriangleMeshGeometry{ pCastleMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pCastleRB->AddCollider(PxTriangleMeshGeometry{ pCastleMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pCastleModel->SetMaterial(pCastleMat);
 
@@ -544,7 +578,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pRoofMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Roof.ovpt");
 
 	auto pRoofRB = pRoof->AddComponent(new RigidBodyComponent(true));
-	pRoofRB->AddCollider(PxTriangleMeshGeometry{ pRoofMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pRoofRB->AddCollider(PxTriangleMeshGeometry{ pRoofMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pRoofModel->SetMaterial(pRoofMat);
 
@@ -564,7 +598,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pCarpetMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Carpet.ovpt");
 
 	auto pCarpetRB = pCarpet->AddComponent(new RigidBodyComponent(true));
-	pCarpetRB->AddCollider(PxTriangleMeshGeometry{ pCarpetMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pCarpetRB->AddCollider(PxTriangleMeshGeometry{ pCarpetMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pCarpetModel->SetMaterial(pCarpetMat);
 
@@ -583,7 +617,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pBridgeTopMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/BridgeTop.ovpt");
 
 	auto pBridgeTopRB = pBridgeTop->AddComponent(new RigidBodyComponent(true));
-	pBridgeTopRB->AddCollider(PxTriangleMeshGeometry{ pBridgeTopMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pBridgeTopRB->AddCollider(PxTriangleMeshGeometry{ pBridgeTopMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pBridgeTopModel->SetMaterial(pBridgeTopMat);
 
@@ -595,13 +629,13 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 
 	const auto pBridgeSide = pCastleRoot->AddChild(new GameObject());
 	const auto pBridgeSideModel = pBridgeSide->AddComponent(new ModelComponent(L"Meshes/Mario/CastleModels/BridgeSide.ovm"));
-	pBridgeTop->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
+	pBridgeSide->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
 
 
 	const auto pBridgeSideMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/BridgeSide.ovpt");
 
 	auto pBridgeSideRB = pBridgeSide->AddComponent(new RigidBodyComponent(true));
-	pBridgeSideRB->AddCollider(PxTriangleMeshGeometry{ pBridgeSideMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pBridgeSideRB->AddCollider(PxTriangleMeshGeometry{ pBridgeSideMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pBridgeSideModel->SetMaterial(pBridgeSideMat);
 
@@ -622,7 +656,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pPeachTopMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/PeachTop.ovpt");
 
 	auto pPeachTopRB = pPeachTop->AddComponent(new RigidBodyComponent(true));
-	pPeachTopRB->AddCollider(PxTriangleMeshGeometry{ pPeachTopMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pPeachTopRB->AddCollider(PxTriangleMeshGeometry{ pPeachTopMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pPeachTopModel->SetMaterial(pPeachTopMat);
 
@@ -643,7 +677,7 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	const auto pPeachBottomMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/PeachBottom.ovpt");
 
 	auto pPeachBottomRB = pPeachBottom->AddComponent(new RigidBodyComponent(true));
-	pPeachBottomRB->AddCollider(PxTriangleMeshGeometry{ pPeachBottomMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	pPeachBottomRB->AddCollider(PxTriangleMeshGeometry{ pPeachBottomMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *m_pDefaultPhysxMat);
 
 	pPeachBottomModel->SetMaterial(pPeachBottomMat);
 
@@ -687,10 +721,10 @@ void MarioScene::MakeLevel(physx::PxMaterial* pPhysicsMaterial)
 	pWaterfall->GetTransform()->Scale({ CorrectScale.x, CorrectScale.y, CorrectScale.z });
 
 
-	const auto pWaterfallMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Waterfall.ovpt");
+	//const auto pWaterfallMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Mario/CastleModels/Waterfall.ovpt");
 
-	auto pWaterfallRB = pWaterfall->AddComponent(new RigidBodyComponent(true));
-	pWaterfallRB->AddCollider(PxTriangleMeshGeometry{ pWaterfallMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
+	//auto pWaterfallRB = pWaterfall->AddComponent(new RigidBodyComponent(true));
+	//pWaterfallRB->AddCollider(PxTriangleMeshGeometry{ pWaterfallMesh, PxMeshScale{{ CorrectScale.x, CorrectScale.y, CorrectScale.z }} }, *pPhysicsMaterial);
 
 	pWaterfallModel->SetMaterial(pWaterfallMat);
 	pWaterfallModel->DrawPost(false);
@@ -740,11 +774,33 @@ void MarioScene::MakeUnderwater(physx::PxMaterial* physicsMaterial)
 
 void MarioScene::MakeUI()
 {
-	auto pHead = AddChild(new GameObject);
-	pHead->AddComponent(new SpriteComponent(L"Textures/Mario/GameUI/CoinHUD.png"));
-	pHead->GetTransform()->Translate(m_SceneContext.windowWidth - 100, 15, 0);
+	auto pCoin = AddChild(new GameObject);
+	pCoin->AddComponent(new SpriteComponent(L"Textures/Mario/GameUI/CoinHUD.png"));
+	pCoin->GetTransform()->Translate(m_SceneContext.windowWidth - 100, 15, 0);
 	m_CoinsGottenPosition = { m_SceneContext.windowWidth - 70, 12.5f };
 
+
+	auto pHead = AddChild(new GameObject);
+	pHead->AddComponent(new SpriteComponent(L"Textures/Mario/GameUI/MarioHeadHUD.png"));
+	pHead->GetTransform()->Translate(m_SceneContext.windowWidth - 500, 15, 0);
+	m_LivesLeftPosition = { m_SceneContext.windowWidth - 450, 12.5f };
+
+	MakeHearts();
+
+}
+
+void MarioScene::MakeHearts()
+{
+	static const PxVec2 healthStartPos{ m_SceneContext.windowWidth - 300,12.5 };
+	constexpr float widthOffset{ 35 };
+	m_pHeartsHud = AddChild(new GameObject);
+	for (int i = 0; i < 3; ++i)
+	{
+		auto pHeart = m_pHeartsHud->AddChild(new GameObject);
+		m_pHearts.emplace_back(pHeart);
+		pHeart->AddComponent(new SpriteComponent(L"Textures/Mario/Mario/Heart.png"));
+		pHeart->GetTransform()->Translate(healthStartPos.x + widthOffset * i, healthStartPos.y, 0.35f);
+	}
 }
 
 void MarioScene::MakePauseMenu()
@@ -752,11 +808,14 @@ void MarioScene::MakePauseMenu()
 	m_pPostBlur = MaterialManager::Get()->CreateMaterial<PostBlur>();
 
 
-	auto pResume = AddChild(new Button(L"Textures/Mario/Menu/Resume.png", [&]() { Resume(); }));
-	pResume->GetTransform()->Translate(290, 550, 0.5f);
-	m_Buttons.emplace_back(pResume);
+	auto pMainMenu = AddChild(new Button(L"Textures/Mario/Menu/ToMainMenu.png", [&]() {
+		Reset();
+		SceneManager::Get()->SetActiveGameScene(L"MainMenuScene");
+		}));
+	pMainMenu->GetTransform()->Translate(290, 550, 0.5f);
+	m_Buttons.emplace_back(pMainMenu);
 
-	m_PauseMenuSprites.emplace_back(pResume->GetComponent<SpriteComponent>());
+	m_PauseMenuSprites.emplace_back(pMainMenu->GetComponent<SpriteComponent>());
 	m_PauseMenuSprites.back()->SetActive(false);
 
 
@@ -778,7 +837,6 @@ void MarioScene::MakePauseMenu()
 
 void MarioScene::Pause()
 {
-
 	AddPostProcessingEffect(m_pPostBlur);
 	for (auto& sprite : m_PauseMenuSprites)
 	{
@@ -803,28 +861,16 @@ void MarioScene::Resume()
 void MarioScene::MakeSkybox()
 {
 	const auto pSkyBoxMat = MaterialManager::Get()->CreateMaterial<SkyboxMaterial>();
-	pSkyBoxMat->SetDiffuseTexture(L"Textures/Mario/Skybox/Skybox.jpg");
+	pSkyBoxMat->SetDiffuseTexture(L"Textures/Mario/Skybox/Skybox.dds");
 
 	const auto pSkyboxGO = AddChild(new GameObject);
-	pSkyboxGO->GetTransform()->Scale(1000);
-	const auto pSkyboxModel = pSkyboxGO->AddComponent(new ModelComponent(L"Meshes/Sphere.ovm"));
+	const auto pSkyboxModel = pSkyboxGO->AddComponent(new ModelComponent(L"Meshes/Box.ovm"));
 	pSkyboxModel->SetMaterial(pSkyBoxMat);
 }
 
 void MarioScene::Reset()
 {
-
 	m_pMario->GetTransform()->Translate(0, 5, 0);
-
-	for (auto& coin : m_Coins)
-	{
-		RemoveChild(coin, true);
-	}
-	m_Coins.clear();
-
-	MakeCoin(10, 10, 0, pDefaultPhysxMat);
-	MakeCoin(-10, 10, 0, pDefaultPhysxMat);
-
 
 	for (auto& goomba : m_Goombas)
 	{
@@ -832,10 +878,29 @@ void MarioScene::Reset()
 	}
 	m_Goombas.clear();
 
-	MakeGoomba(0, 10, 0, pDefaultPhysxMat);
+	MakeGoomba(20, 10, 20, m_pDefaultPhysxMat);
 
+	for (auto& coin : m_Coins)
+	{
+		RemoveChild(coin, true);
+	}
+	m_Coins.clear();
+
+	MakeCoin(10, 10, 0, m_pDefaultPhysxMat);
+	MakeCoin(-10, 10, 0, m_pDefaultPhysxMat);
 
 	m_NrCoinsPickedUp = 0;
+
+	for (auto& heart : m_pHearts)
+	{
+		m_pHeartsHud->RemoveChild(heart, true);
+	}
+	m_pHearts.clear();
+
+	MakeHearts();
+	m_IsDead = false;
+
 	Resume();
+
 }
 

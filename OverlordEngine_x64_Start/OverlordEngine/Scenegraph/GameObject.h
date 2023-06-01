@@ -141,6 +141,8 @@ protected:
 	virtual void OnSceneAttach(GameScene* /*pScene*/) {}
 	virtual void OnSceneDetach(GameScene* /*pScene*/) {}
 
+
+
 private:
 	friend class GameScene; //Handles private interface
 

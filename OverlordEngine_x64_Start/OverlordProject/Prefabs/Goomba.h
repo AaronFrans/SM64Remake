@@ -2,6 +2,8 @@
 #pragma once
 
 class ThirdPersonCharacter;
+class ParticleEmmiter;
+class MarioScene;
 class Goomba final : public GameObject
 {
 public:
@@ -19,14 +21,23 @@ protected:
 
 private:
 
+	void MakeParticleEmmiter();
+
 	physx::PxMaterial* m_pPhysxMat{};
+
+	MarioScene* m_OwningScene{};
 
 	ControllerComponent* m_pController{};
 	GameObject* m_pHitBox{};
+	GameObject* m_pMesh{};
 
 	ThirdPersonCharacter* m_pMario{};
 
+	ParticleEmmiter* m_pEmmiter{ nullptr };
+
 	float m_YRot{ 0 };
+
+	float m_TimeSinceSpawm{ 0 };
 
 	float m_MoveSpeed{ 3 };
 

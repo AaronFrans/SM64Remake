@@ -7,7 +7,7 @@
 //#define W5
 //#define W6
 //#define W7
-//#define W8
+// #define W8
 //#define W9
 //#define W10
 
@@ -46,7 +46,7 @@
 #endif
 
 #ifdef W8
-#include "Scenes/Week 8/ShadowMappingScene.h"
+ #include "Scenes/Week 8/ShadowMappingScene.h"
 #endif
 
 #ifdef W9
@@ -78,6 +78,7 @@
 
 #include "Scenes/Exam/MainMenuScene.h"
 #include "Scenes/Exam/MarioScene.h"
+#include "Scenes/Exam/DeathScene.h"
 
 #pragma endregion
 
@@ -159,6 +160,7 @@ void MainGame::Initialize()
 
 	SceneManager::Get()->AddGameScene(new MainMenuScene());
 	SceneManager::Get()->AddGameScene(new MarioScene());
+	SceneManager::Get()->AddGameScene(new DeathScene());
 }
 
 LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam, LPARAM lParam)

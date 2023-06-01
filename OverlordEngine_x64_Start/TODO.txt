@@ -1,15 +1,15 @@
-pause menu + buttons
-skybox
-goomba on kill -> smoke
+lives left hud
+
+Win screen -> Pick up all coins
+
 sfx to start menu,
 sfx to all states,
 coin pick up sfx,
+
 sprint
 backflip
 long jump
 
-player health hud
-lives left hud
 
 controller controls
 

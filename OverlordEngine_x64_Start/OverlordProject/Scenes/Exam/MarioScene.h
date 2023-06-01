@@ -19,10 +19,13 @@ public:
 	MarioScene& operator=(const MarioScene& other) = delete;
 	MarioScene& operator=(MarioScene&& other) noexcept = delete;
 
+
+	void RemoveHealth();
+
 protected:
 	void Initialize() override;
 	void OnGUI() override;
-
+	void OnSceneActivated() override;
 
 	void Update() override;
 
@@ -48,11 +51,12 @@ private:
 	void MakeCoin(float x, float y, float z, physx::PxMaterial* physicsMaterial);
 	void MakeGoomba(float x, float y, float z, physx::PxMaterial* physicsMaterial);
 
-	void MakeLevel(physx::PxMaterial* physicsMaterial);
+	void MakeLevel();
 
 	void MakeUnderwater(physx::PxMaterial* physicsMaterial);
 
 	void MakeUI();
+	void MakeHearts();
 
 	void MakePauseMenu();
 
@@ -68,10 +72,10 @@ private:
 
 
 	//Underwater Volume
-	unsigned m_NrCoinsPickedUp{};
 	PostUnderwater* m_pPostUnderwater;
 
-	physx::PxMaterial* pDefaultPhysxMat{};
+	physx::PxMaterial* m_pDefaultPhysxMat{};
+	physx::PxMaterial* m_pSlipperyPhysxMat{};
 	std::vector<Coin*> m_Coins{};
 	std::vector<Goomba*> m_Goombas{};
 
@@ -96,16 +100,30 @@ private:
 
 	//Ui
 	SpriteFont* m_pFont{};
-
-	std::string m_CoinsGotten{ "Nr of Coins %d", m_NrCoinsPickedUp };
-	XMFLOAT2 m_CoinsGottenPosition{};
+	GameObject* m_pHeartsHud{};
+	std::vector<GameObject*> m_pHearts{};
 	XMFLOAT4 m_TextColor{ 189 / 255.0f, 183 / 255.0f, 107 / 255.0f, 1 };
 
+
+
+	//Lives
+	int m_NrOfLives{ 3 };
+	std::string m_LivesLeft{ "Nr of Lives %d", m_NrOfLives };
+	XMFLOAT2 m_LivesLeftPosition{};
+	bool m_IsDead{ false };
+
+
+	//Coins
+	unsigned m_NrCoinsPickedUp{};
+	std::string m_CoinsGotten{ "Nr of Coins %d", m_NrCoinsPickedUp };
+	XMFLOAT2 m_CoinsGottenPosition{};
+
+
+	//Pause
 	std::vector<SpriteComponent*> m_PauseMenuSprites{};
 	std::vector<Button*> m_Buttons{};
 	PostBlur* m_pPostBlur{};
 	bool m_IsPaused{ false };
-
 
 	float m_ShadowMapScale{ 0.3f };
 };

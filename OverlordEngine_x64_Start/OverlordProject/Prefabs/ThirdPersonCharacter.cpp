@@ -20,7 +20,7 @@ void ThirdPersonCharacter::Initialize(const SceneContext& /*sceneContext*/)
 	const auto pCamera = AddChild(new FixedCamera());
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true); //Uncomment to make this camera the active camera
-	
+
 	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, -20);
 
 
@@ -50,11 +50,14 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 {
 	if (m_pCameraComponent->IsActive())
 	{
+		const auto& elapsedTime = sceneContext.pGameTime->GetElapsed();
+
+		HandleDamage(elapsedTime);
 		//constexpr float epsilon{ 0.01f }; //Constant that can be used to compare if a float is near zero
 
 		//***************
 		//HANDLE INPUT
-		const auto& elapsedTime = sceneContext.pGameTime->GetElapsed();
+
 
 		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Punch) && !m_IsPunching)
 		{
@@ -242,6 +245,32 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 
 }
 
+void ThirdPersonCharacter::HandleDamage(float elapsed)
+{
+	if (!m_IsDamaged)
+		return;
+
+	m_CurDamageTime += elapsed;
+
+	if (m_CurModelSwitchTime >= MODEL_SWITCH_MIN_TIME)
+	{
+		m_pModelComponent->SetActive(!m_pModelComponent->IsAcive());
+		m_CurModelSwitchTime = 0;
+	}
+
+	m_CurModelSwitchTime += elapsed;
+	if (m_CurDamageTime >= DAMAGE_MIN_TIME)
+	{
+		m_IsDamaged = false;
+		m_CurDamageTime = 0;
+		m_CurModelSwitchTime = 0;
+
+		m_pModelComponent->SetActive(true);
+	}
+
+
+}
+
 void ThirdPersonCharacter::DrawImGui()
 {
 	if (ImGui::CollapsingHeader("Character"))
@@ -305,6 +334,15 @@ void ThirdPersonCharacter::SetAnimator(ModelAnimator* modelAnimator)
 void ThirdPersonCharacter::Jump()
 {
 	m_TotalVelocity.y = m_CharacterDesc.JumpSpeed;
+}
+
+void ThirdPersonCharacter::Damage()
+{
+	m_IsDamaged = true;
+	m_CurDamageTime = 0;
+	m_CurModelSwitchTime = 0;
+	m_pModelComponent->SetActive(false);
+
 }
 
 const FixedCamera* ThirdPersonCharacter::GetCamera()

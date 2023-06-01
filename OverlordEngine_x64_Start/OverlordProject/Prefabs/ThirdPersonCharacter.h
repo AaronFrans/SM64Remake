@@ -54,6 +54,9 @@ public:
 
 	void Jump();
 
+	void Damage();
+	bool IsDamaged() { return m_IsDamaged; };
+
 	const FixedCamera* GetCamera();
 
 protected:
@@ -88,5 +91,18 @@ private:
 	const static int PUNCH_TIME{ 1 };
 
 	float m_CurPunchTime{ 0 };
+
+	bool m_IsDamaged{ false };
+	bool m_IsModelActive{ false };
+
+
+	float m_CurDamageTime{ 0 };
+	const static int DAMAGE_MIN_TIME{ 1 };
+	float m_CurModelSwitchTime{ 0 };
+	constexpr static float MODEL_SWITCH_MIN_TIME{ 0.25f };
+
+
+	void HandleDamage(float elapsed);
+
 };
 

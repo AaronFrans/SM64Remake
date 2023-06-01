@@ -62,7 +62,7 @@ SamplerState gTextureSampler
 
 //LIGHT
 //*****
-float3 gLightDirection :DIRECTION
+float3 gLightDirection : DIRECTION
 <
 	string UIName = "Light Direction";
 	string Object = "TargetLight";
@@ -518,7 +518,7 @@ float4 MainPS(VS_Output input) : SV_TARGET {
 	
 	//OPACITY
 	float opacity = CalculateOpacity(input.TexCoord);
-	clip(opacity - 0.1f);
+	clip(opacity - 0.3f);
 
 
 	float shadowValue = EvaluateShadowMap(input.lPos);

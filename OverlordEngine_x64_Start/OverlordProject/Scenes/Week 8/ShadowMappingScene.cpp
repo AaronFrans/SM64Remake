@@ -45,6 +45,20 @@ void ShadowMappingScene::Initialize()
 		pAnimator->Play();
 	}
 
+
+
+	const auto pObject2 = AddChild(new GameObject);
+	pObject->GetTransform()->Translate(10, 0, 10);
+	const auto pModel2 = pObject2->AddComponent(new ModelComponent(L"Meshes/PeasantGirl.ovm"));
+	pModel2->SetMaterial(pPeasantMaterial);
+
+	pObject2->GetTransform()->Scale(0.1f, 0.1f, 0.1f);
+
+	if (const auto pAnimator = pModel2->GetAnimator())
+	{
+		pAnimator->SetAnimation(2);
+		pAnimator->Play();
+	}
 	//Input
 	//*****
 	m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_SPACE));

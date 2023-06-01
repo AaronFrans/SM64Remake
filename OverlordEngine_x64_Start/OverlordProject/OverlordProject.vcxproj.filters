@@ -47,6 +47,7 @@
     <ClCompile Include="Materials\Mario\Post\PostUnderwater.cpp" />
     <ClCompile Include="Prefabs\Goomba.cpp" />
     <ClCompile Include="Materials\Mario\SkyboxMaterial.cpp" />
+    <ClCompile Include="Scenes\Exam\DeathScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -94,5 +95,6 @@
     <ClInclude Include="Materials\Mario\Post\PostUnderwater.h" />
     <ClInclude Include="Prefabs\Goomba.h" />
     <ClInclude Include="Materials\Mario\SkyboxMaterial.h" />
+    <ClInclude Include="Scenes\Exam\DeathScene.h" />
   </ItemGroup>
 </Project>

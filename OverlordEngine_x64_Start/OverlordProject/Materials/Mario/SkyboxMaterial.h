@@ -18,6 +18,5 @@ protected:
 
 	void OnUpdateModelVariables(const SceneContext& /*sceneContext*/, const ModelComponent* pModel) const;
 private:
-	TextureData* m_pDiffuseTexture{ nullptr };
 };
 

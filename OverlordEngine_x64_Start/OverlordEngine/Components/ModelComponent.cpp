@@ -53,6 +53,10 @@ void ModelComponent::Initialize(const SceneContext& sceneContext)
 
 void ModelComponent::Update(const SceneContext& sceneContext)
 {
+
+	if (!m_IsActive)
+		return;
+
 	if (m_pAnimator)
 		m_pAnimator->Update(sceneContext);
 }
@@ -71,6 +75,9 @@ void ModelComponent::PostDraw(const SceneContext& sceneContext)
 
 void ModelComponent::InnerDraw(const SceneContext& sceneContext)
 {
+	if (!m_IsActive)
+		return;
+
 	if (!m_pDefaultMaterial)
 	{
 		Logger::LogWarning(L"ModelComponent::Draw() > No Default Material Set!");
