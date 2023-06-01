@@ -46,5 +46,10 @@ private:
 
 	bool m_CanBeHit{ false };
 	bool m_HasDied{ false };
+
+
+
+
+	FMOD::Sound* m_pDeath2D{ nullptr };
 };
 

@@ -49,6 +49,10 @@ void Goomba::Initialize(const SceneContext&)
 	SetTag(L"Goomba");
 
 
+	const auto pFmod = SoundManager::Get()->GetSystem();
+
+	pFmod->createStream("Resources/Sounds/Mario/Goomba.wav", FMOD_2D, nullptr, &m_pDeath2D);
+
 	//Visuals
 	const auto pGoombaMat = MaterialManager::Get()->CreateMaterial<UberMaterial>();
 
@@ -104,10 +108,6 @@ void Goomba::Initialize(const SceneContext&)
 
 void Goomba::Update(const SceneContext& sceneContext)
 {
-
-
-	
-
 	if (!sceneContext.pGameTime->IsRunning())
 		return;
 
@@ -161,7 +161,6 @@ void Goomba::Update(const SceneContext& sceneContext)
 
 
 	auto forward = GetTransform()->GetForward();
-	std::cout << "Forward X: " << forward.x << " Forward y: " << forward.y << " Forward z: " << forward.z << '\n';
 
 	const float elapsed = sceneContext.pGameTime->GetElapsed();
 	const float moveDistance = elapsed * m_MoveSpeed;
@@ -187,6 +186,12 @@ void Goomba::Update(const SceneContext& sceneContext)
 
 void Goomba::MakeParticleEmmiter()
 {
+
+
+	const auto pFmod = SoundManager::Get()->GetSystem();
+	FMOD::Channel* pChannel{ nullptr };
+	pFmod->playSound(m_pDeath2D, nullptr, false, &pChannel);
+
 	ParticleEmitterSettings settings{};
 	settings.velocity = { 0,0,0 };
 	settings.minSize = 0.5f;

@@ -16,6 +16,8 @@ protected:
 
 	void Update() override;
 	void OnGUI() override;
+	void OnSceneActivated() override;
+	void OnSceneDeactivated() override;
 
 private:
 

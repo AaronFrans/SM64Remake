@@ -10,10 +10,18 @@ Coin::Coin(physx::PxMaterial* physicsMaterial, unsigned* coinCounter, std::vecto
 	, m_OwningVec{ owningCollection }
 
 {
+	
 }
 
 void Coin::Initialize(const SceneContext&)
 {
+
+	const auto pFmod = SoundManager::Get()->GetSystem();
+	FMOD::Sound* pSound2D{ nullptr };
+	auto result = pFmod->createStream("Resources/Sounds/Mario/Coin.wav", FMOD_2D, nullptr, &pSound2D);
+	result = pFmod->playSound(pSound2D, nullptr, false, &m_pChannel2D);
+	m_pChannel2D->setPaused(true);
+
 	const PxVec3 coinScale{ 0.015f, 0.015f, 0.015f };
 	auto pCoinMat = MaterialManager::Get()->CreateMaterial<ColorMaterial>();
 	pCoinMat->SetColor({ 189 / 255.0f, 183 / 255.0f, 107 / 255.0f, 1 });
@@ -45,8 +53,7 @@ void Coin::Initialize(const SceneContext&)
 
 		if (action != PxTriggerAction::ENTER && pOther->GetTag() == L"Mario")
 			return;
-
-		std::cout << "hit";
+		m_pChannel2D->setPaused(false);
 
 		m_WasHit = true;
 

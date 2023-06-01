@@ -106,5 +106,10 @@ private:
 
 	void HandleDamage(float elapsed);
 
+
+	FMOD::Sound* m_pPunch2D{ nullptr };
+	FMOD::Sound* m_pJump2D{ nullptr };
+	FMOD::Sound* m_pDamage2D{ nullptr };
+
 };
 

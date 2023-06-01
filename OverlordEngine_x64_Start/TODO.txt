@@ -1,16 +1,9 @@
-sfx to buttons,
-sfx to all states,
-coin pick up sfx,
-music to menus and game
-
 sprint
-backflip
 long jump
-
-
 controller controls
 
-fix goomba shadows
+
+Make video
 
 Main menu:
     -> buttons first

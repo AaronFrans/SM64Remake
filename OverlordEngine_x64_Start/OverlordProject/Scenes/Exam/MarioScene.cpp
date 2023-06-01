@@ -111,6 +111,16 @@ void MarioScene::Initialize()
 	MakePauseMenu();
 
 	m_pFont = ContentManager::Load<SpriteFont>(L"SpriteFonts/Mario/Mario64.fnt");
+
+
+
+	const auto pFmod = SoundManager::Get()->GetSystem();
+	FMOD::Sound* pSound2D{ nullptr };
+	auto result = pFmod->createStream("Resources/Sounds/Mario/Courtyard.mp3", FMOD_2D | FMOD_LOOP_NORMAL, nullptr, &pSound2D);
+	result = pFmod->playSound(pSound2D, nullptr, false, &m_pChannel2D);
+	m_pChannel2D->setPaused(true);
+	m_pChannel2D->setVolume(0.5f);
+
 }
 
 void MarioScene::OnGUI()
@@ -142,31 +152,30 @@ void MarioScene::OnGUI()
 	}
 
 
-	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
-
-	float value = ShadowMapRenderer::Get()->GetFarPlane();
-	ImGui::DragFloat("Far", &value, 100.f, -1000, 1000);
-	ShadowMapRenderer::Get()->SetFarPlane(value);
-	
-	value = ShadowMapRenderer::Get()->GetNearPlane();
-	ImGui::DragFloat("Near", &value, 0.1f, -1000, 1000);
-	ShadowMapRenderer::Get()->SetNearPlane(value);
-
-	ImGui::DragFloat3("Offset", m_LightOffset, 0.1f, -2000, 2000);
-
-	m_LightDirection = m_SceneContext.pLights->GetDirectionalLight().direction;
-	float dir[4]{ m_LightDirection.x, m_LightDirection.y, m_LightDirection.z, m_LightDirection.w };
-	ImGui::DragFloat4("Direction", dir, 0.1f, -1000, 1000);
-	m_SceneContext.pLights->GetDirectionalLight().direction = XMFLOAT4{ dir[0], dir[1], dir[2], dir[3] };
-
 
 }
 
 void MarioScene::OnSceneActivated()
 {
+	m_pChannel2D->setPosition(0, FMOD_TIMEUNIT_MS);
+	m_pChannel2D->setPaused(false);
+
 	m_NrOfLives = 3;
 
+	m_NrTotalCoins = 0;
+	for (auto& coin : m_Coins)
+	{
+		RemoveChild(coin, true);
+	}
+	m_Coins.clear();
 
+	MakeCoin(10, 10, 0, m_pDefaultPhysxMat);
+	MakeCoin(-10, 10, 0, m_pDefaultPhysxMat);
+}
+
+void MarioScene::OnSceneDeactivated()
+{
+	m_pChannel2D->setPaused(true);
 }
 
 void MarioScene::Update()
@@ -212,7 +221,7 @@ void MarioScene::Update()
 
 void MarioScene::PostDraw()
 {
-	ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
+	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
 }
 
 void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
@@ -843,7 +852,7 @@ void MarioScene::MakePauseMenu()
 	auto pMainMenu = AddChild(new Button(L"Textures/Mario/Menu/ToMainMenu.png", [&]() {
 		Reset();
 		SceneManager::Get()->SetActiveGameScene(L"MainMenuScene");
-		}));
+		}, "Resources/Sounds/Mario/ToMainMenu.wav"));
 	pMainMenu->GetTransform()->Translate(290, 550, 0.5f);
 	m_Buttons.emplace_back(pMainMenu);
 
@@ -851,14 +860,14 @@ void MarioScene::MakePauseMenu()
 	m_PauseMenuSprites.back()->SetActive(false);
 
 
-	auto pQuit = AddChild(new Button(L"Textures/Mario/Menu/Quit.png", [&]() { OverlordGame::Quit(); }));
+	auto pQuit = AddChild(new Button(L"Textures/Mario/Menu/Quit.png", [&]() { OverlordGame::Quit(); }, "Resources/Sounds/Mario/Exit.wav"));
 	pQuit->GetTransform()->Translate(820, 550, 0.5f);
 	m_Buttons.emplace_back(pQuit);
 
 	m_PauseMenuSprites.emplace_back(pQuit->GetComponent<SpriteComponent>());
 	m_PauseMenuSprites.back()->SetActive(false);
 
-	auto pRestart = AddChild(new Button(L"Textures/Mario/Menu/Restart.png", [&]() { Reset(); }));
+	auto pRestart = AddChild(new Button(L"Textures/Mario/Menu/Restart.png", [&]() { Reset(); }, "Resources/Sounds/Mario/Start-Restart.wav"));
 	pRestart->GetTransform()->Translate(550, 230, 0.5f);
 	m_Buttons.emplace_back(pRestart);
 
@@ -910,15 +919,6 @@ void MarioScene::Reset()
 	{
 		goomba->Reset();
 	}
-
-	for (auto& coin : m_Coins)
-	{
-		RemoveChild(coin, true);
-	}
-	m_Coins.clear();
-
-	MakeCoin(10, 10, 0, m_pDefaultPhysxMat);
-	MakeCoin(-10, 10, 0, m_pDefaultPhysxMat);
 
 	m_NrCoinsPickedUp = 0;
 

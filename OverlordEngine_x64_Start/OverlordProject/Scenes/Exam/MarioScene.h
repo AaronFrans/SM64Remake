@@ -27,6 +27,7 @@ protected:
 	void Initialize() override;
 	void OnGUI() override;
 	void OnSceneActivated() override;
+	void OnSceneDeactivated() override;
 
 	void Update() override;
 
@@ -132,4 +133,7 @@ private:
 
 	float m_LightOffset[3]{ 0, 0,0 };
 	XMFLOAT4 m_LightDirection{};
+
+
+	FMOD::Channel* m_pChannel2D{ nullptr };
 };

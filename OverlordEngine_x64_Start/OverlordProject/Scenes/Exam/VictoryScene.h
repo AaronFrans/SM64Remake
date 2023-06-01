@@ -16,10 +16,13 @@ protected:
 
 	void Update() override;
 	void OnGUI() override;
+	void OnSceneActivated() override;
+	void OnSceneDeactivated() override;
 
 private:
 
 
 	std::vector<Button*> m_Buttons;
 
+	FMOD::Channel* m_pChannel2D{ nullptr };
 };

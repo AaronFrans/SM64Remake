@@ -34,5 +34,8 @@ private:
 	float m_TimeSinceSpawm{ 0 };
 
 	std::vector<Coin*>& m_OwningVec;
+
+
+	FMOD::Channel* m_pChannel2D{ nullptr };
 };
 

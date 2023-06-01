@@ -3,7 +3,7 @@ class Button final : public GameObject
 {
 
 public:
-	Button(std::wstring texturePath, const std::function<void()> func);
+	Button(std::wstring texturePath, const std::function<void()> func, const std::string& sfxPath);
 
 
 	~Button() override = default;
@@ -28,5 +28,8 @@ private:
 
 	std::wstring m_FilePath;
 
+	FMOD::Channel* m_pChannel2D{ nullptr };
+
+	std::string m_SfxPath{};
 };
 

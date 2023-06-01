@@ -20,15 +20,14 @@ void MainMenuScene::Initialize()
 
 	auto pStart = AddChild(new Button(L"Textures/Mario/Menu/Start.png",
 		[&]() {
-			m_pChannel2D->stop();
 			SceneManager::Get()->SetActiveGameScene(L"MarioScene");
-		}));
+		}, "Resources/Sounds/Mario/Start-Restart.wav"));
 	m_Buttons.emplace_back(pStart);
 	pStart->GetTransform()->Translate(270, 450, 0.5f);
 
 
 
-	auto pQuit = AddChild(new Button(L"Textures/Mario/Menu/Quit.png", [&]() {OverlordGame::Quit(); }));
+	auto pQuit = AddChild(new Button(L"Textures/Mario/Menu/Quit.png", [&]() {OverlordGame::Quit(); }, "Resources/Sounds/Mario/Exit.wav"));
 	pQuit->GetTransform()->Translate(800, 450, 0.5f);
 
 	m_Buttons.emplace_back(pQuit);
@@ -42,6 +41,8 @@ void MainMenuScene::Initialize()
 	FMOD::Sound* pSound2D{ nullptr };
 	auto result = pFmod->createStream("Resources/Sounds/Mario/MainMenu.mp3", FMOD_2D | FMOD_LOOP_NORMAL, nullptr, &pSound2D);
 	result = pFmod->playSound(pSound2D, nullptr, false, &m_pChannel2D);
+	m_pChannel2D->setPaused(true);
+	m_pChannel2D->setVolume(0.5f);
 
 }
 
@@ -61,4 +62,15 @@ void MainMenuScene::Update()
 void MainMenuScene::OnGUI()
 {
 
+}
+
+void MainMenuScene::OnSceneActivated()
+{
+	m_pChannel2D->setPosition(0, FMOD_TIMEUNIT_MS);
+	m_pChannel2D->setPaused(false);
+}
+
+void MainMenuScene::OnSceneDeactivated()
+{
+	m_pChannel2D->setPaused(true);
 }
