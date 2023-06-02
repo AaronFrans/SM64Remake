@@ -13,6 +13,7 @@ struct CharacterDesc
 	}
 
 	float maxMoveSpeed{ 15.f };
+	float maxSprintMoveSpeed{ 35.f };
 	float maxFallSpeed{ 30.f };
 
 	float JumpSpeed{ 50.f };
@@ -30,6 +31,7 @@ struct CharacterDesc
 	int actionId_MoveBackward{ -1 };
 	int actionId_Jump{ -1 };
 	int actionId_Punch{ -1 };
+	int actionId_Sprint{ -1 };
 };
 
 
@@ -66,6 +68,8 @@ protected:
 	void Update(const SceneContext&) override;
 
 private:
+	float m_MaxSprintFallSpeed{ 20.f };
+
 	CameraComponent* m_pCameraComponent{};
 	ControllerComponent* m_pControllerComponent{};
 
@@ -73,11 +77,14 @@ private:
 	ModelAnimator* m_pModelAnimator{};
 
 	GameObject* m_pPunchBox{};
+	GameObject* m_pCameraBox{};
 
 	CharacterDesc m_CharacterDesc;
 	float m_TotalPitch{}, m_TotalYaw{};				//Total camera Pitch(X) and Yaw(Y) rotation
 	float m_MoveAcceleration{},						//Acceleration required to reach maxMoveVelocity after 1 second (maxMoveVelocity / moveAccelerationTime)
+		m_SprintMoveAcceleration{},					//Acceleration required to reach maxSprintMoveVelocity after 1 second (maxSprintMoveVelocity / moveAccelerationTime)
 		m_FallAcceleration{},						//Acceleration required to reach maxFallVelocity after 1 second (maxFallVelocity / fallAccelerationTime)
+		m_SprintFallAcceleration{},					//Acceleration required to reach maxSprintFallVelocity after 1 second (maxSprintFallSpeed / fallAccelerationTime)
 		m_MoveSpeed{};								//MoveSpeed > Horizontal Velocity = MoveDirection * MoveVelocity (= TotalVelocity.xz)
 
 	XMFLOAT3 m_TotalVelocity{};						//TotalVelocity with X/Z for Horizontal Movement AND Y for Vertical Movement (fall/jump)
@@ -96,6 +103,8 @@ private:
 
 	bool m_IsDamaged{ false };
 	bool m_IsModelActive{ false };
+
+	bool m_IsSprinting{ false };
 
 
 	float m_CurDamageTime{ 0 };

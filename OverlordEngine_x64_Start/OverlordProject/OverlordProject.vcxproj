@@ -100,6 +100,7 @@
     <ClCompile Include="Prefabs\ParticleEmmiter.cpp" />
     <ClCompile Include="Prefabs\Button.cpp" />
     <ClCompile Include="Prefabs\Coin.cpp" />
+    <ClCompile Include="Scenes\Exam\Inputs.cpp" />
     <ClCompile Include="Scenes\Exam\MainMenuScene.cpp" />
     <ClCompile Include="Materials\Mario\EntityMaterial_Skinned.cpp" />
     <ClCompile Include="Materials\Post\PostGrayscale.cpp" />

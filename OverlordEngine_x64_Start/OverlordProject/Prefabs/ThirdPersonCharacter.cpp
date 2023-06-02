@@ -5,10 +5,14 @@
 ThirdPersonCharacter::ThirdPersonCharacter(const CharacterDesc& characterDesc, physx::PxMaterial* physicsMaterial) :
 	m_CharacterDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
+	m_SprintMoveAcceleration(characterDesc.maxSprintMoveSpeed / characterDesc.moveAccelerationTime),
 	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime),
+	m_SprintFallAcceleration(m_MaxSprintFallSpeed / characterDesc.fallAccelerationTime),
 	m_pPhysicsMaterial{ physicsMaterial }
 {
+	//has to be set in the body
 	m_CharacterDesc.actionId_Punch = characterDesc.actionId_Punch;
+	m_CharacterDesc.actionId_Sprint = characterDesc.actionId_Sprint;
 }
 
 void ThirdPersonCharacter::Initialize(const SceneContext& /*sceneContext*/)
@@ -32,8 +36,16 @@ void ThirdPersonCharacter::Initialize(const SceneContext& /*sceneContext*/)
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true); //Uncomment to make this camera the active camera
 
-	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, -20);
 
+	//Camera Hitbox
+	m_pCameraBox = pCamera->AddChild(new GameObject);
+	m_pCameraBox->SetTag(L"Camera");
+	const auto pCameraRB = m_pCameraBox->AddComponent(new RigidBodyComponent);
+	pCameraRB->AddCollider(PxBoxGeometry{ 0.125f,0.125f,0.125f }, *m_pPhysicsMaterial);
+	pCameraRB->SetKinematic(true);
+
+
+	pCamera->GetTransform()->Translate(0, m_CharacterDesc.controller.height * .5f, -20);
 
 	m_pPunchBox = AddChild(new GameObject);
 
@@ -66,10 +78,19 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 	const auto& elapsedTime = sceneContext.pGameTime->GetElapsed();
 
 	HandleDamage(elapsedTime);
-	//constexpr float epsilon{ 0.01f }; //Constant that can be used to compare if a float is near zero
+	constexpr float epsilon{ 0.01f }; //Constant that can be used to compare if a float is near zero
 
 	//***************
 	//HANDLE INPUT
+
+	if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Sprint))
+	{
+		m_IsSprinting = true;
+	}
+	else
+	{
+		m_IsSprinting = false;
+	}
 
 
 	if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Punch) && !m_IsPunching)
@@ -118,6 +139,14 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 	{
 		move.x = -1;
 	}
+
+
+
+	if (abs(move.x) < epsilon && abs(move.y) < epsilon)
+	{
+		const auto moveDir = sceneContext.pInput->GetThumbstickPosition(true);
+		move = { moveDir.x * 2, moveDir.y * 2 };
+	}
 	//Optional: if move.x is near zero (abs(move.x) < epsilon), you could use the Left ThumbStickPosition.x for movement
 
 	//## Input Gathering (look)
@@ -127,6 +156,12 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 		const auto mousePos = sceneContext.pInput->GetMouseMovement();
 		look = { static_cast<float>(mousePos.x), static_cast<float>(mousePos.y) };
 	}
+	else
+	{
+		const auto lookDir = sceneContext.pInput->GetThumbstickPosition(false);
+		look = { lookDir.x * 2, -lookDir.y * 2 };
+	}
+
 	//Only if the Left Mouse Button is Down >
 		// Store the MouseMovement in the local 'look' variable (cast is required)
 	//Optional: in case look.x AND look.y are near zero, you could use the Right ThumbStickPosition for look
@@ -159,7 +194,11 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 
 	//## Horizontal Velocity (Forward/Backward/Right/Left)
 	//Calculate the current move acceleration for this frame (m_MoveAcceleration * ElapsedTime)
-	const auto curMoveAccel = m_MoveAcceleration * elapsedTime;
+	float curMoveAccel{};
+	if (m_IsSprinting)
+		curMoveAccel = m_SprintMoveAcceleration * elapsedTime;
+	else
+		curMoveAccel = m_MoveAcceleration * elapsedTime;
 	//If the character is moving (= input is pressed)
 	if (move.x != 0 || move.y != 0)
 	{
@@ -168,11 +207,13 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 
 		//Increase the current MoveSpeed with the current Acceleration (m_MoveSpeed)
 		//Make sure the current MoveSpeed stays below the maximum MoveSpeed (CharacterDesc::maxMoveSpeed)
-		m_MoveSpeed = std::min(m_MoveSpeed + curMoveAccel, m_CharacterDesc.maxMoveSpeed);
+		if (m_IsSprinting)
+			m_MoveSpeed = std::min(m_MoveSpeed + curMoveAccel, m_CharacterDesc.maxSprintMoveSpeed);
+		else
+			m_MoveSpeed = std::min(m_MoveSpeed + curMoveAccel, m_CharacterDesc.maxMoveSpeed);
 
 		if (m_TotalVelocity.y == 0 && !m_IsPunching)
 		{
-
 			m_pModelAnimator->SetAnimation(L"Running");
 		}
 
@@ -201,7 +242,10 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 	{
 		//Decrease the y component of m_TotalVelocity with a fraction (ElapsedTime) of the Fall Acceleration (m_FallAcceleration)
 		//Make sure that the minimum speed stays above -CharacterDesc::maxFallSpeed (negative!)
-		m_TotalVelocity.y = std::max(m_TotalVelocity.y - m_FallAcceleration * elapsedTime, -m_CharacterDesc.maxFallSpeed);
+		if (m_IsSprinting)
+			m_TotalVelocity.y = std::max(m_TotalVelocity.y - m_SprintFallAcceleration * elapsedTime, -m_MaxSprintFallSpeed);
+		else
+			m_TotalVelocity.y = std::max(m_TotalVelocity.y - m_FallAcceleration * elapsedTime, -m_CharacterDesc.maxFallSpeed);
 	}
 	//Else If the jump action is triggered
 	else if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Jump)) {
@@ -255,6 +299,8 @@ void ThirdPersonCharacter::Update(const SceneContext& sceneContext)
 	XMStoreFloat3(&moveDir, { forward * 1.5f + right * 0 });
 	m_pPunchBox->GetTransform()->Translate(playerPos.x + moveDir.x, playerPos.y, playerPos.z + moveDir.z);
 
+	auto cameraPos = m_pCameraComponent->GetTransform()->GetWorldPosition();
+	m_pCameraBox->GetTransform()->Translate(cameraPos);
 
 	m_pPunchBox->GetTransform()->Rotate(0, m_TotalYaw, 0);
 

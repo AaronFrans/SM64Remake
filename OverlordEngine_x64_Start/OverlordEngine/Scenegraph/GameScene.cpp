@@ -239,7 +239,6 @@ void GameScene::RootDraw()
 	}
 #pragma endregion
 	//clear stencil
-
 	//SpriteRenderer Draw
 	SpriteRenderer::Get()->Draw(m_SceneContext);
 

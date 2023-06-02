@@ -1,5 +1,8 @@
 #pragma once
 
+
+
+
 class Button;
 class MainMenuScene : public GameScene
 {
@@ -21,9 +24,11 @@ protected:
 
 private:
 
-
+	
 	FMOD::Channel* m_pChannel2D{ nullptr };
 
+
+	unsigned m_CurButton{0};
 	std::vector<Button*> m_Buttons;
 
 };

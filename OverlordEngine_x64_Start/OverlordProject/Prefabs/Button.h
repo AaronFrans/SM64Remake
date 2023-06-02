@@ -3,7 +3,7 @@ class Button final : public GameObject
 {
 
 public:
-	Button(std::wstring texturePath, const std::function<void()> func, const std::string& sfxPath);
+	Button(std::wstring texturePath, std::wstring activeTexturePath, const std::function<void()> func, const std::string& sfxPath);
 
 
 	~Button() override = default;
@@ -15,6 +15,15 @@ public:
 
 
 	void OnClicked(float xPos, float yPos);
+	void SetSelected(bool isSelected) {
+		m_pTexture->SetActive(!isSelected);
+		m_pActiveTexture->SetActive(isSelected);
+	};
+
+	void DoOnClick();
+
+	void Deactivate();
+	void Activate();
 
 protected:
 
@@ -25,10 +34,12 @@ private:
 	std::function<void()> m_OnClick;
 
 	SpriteComponent* m_pTexture;
+	SpriteComponent* m_pActiveTexture;
 
 	std::wstring m_FilePath;
+	std::wstring m_ActiveFilePath;
 
-	FMOD::Channel* m_pChannel2D{ nullptr };
+	FMOD::Sound* m_pOnClick2D{ nullptr };
 
 	std::string m_SfxPath{};
 };

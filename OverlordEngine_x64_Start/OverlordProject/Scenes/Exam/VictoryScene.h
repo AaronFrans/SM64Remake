@@ -22,6 +22,7 @@ protected:
 private:
 
 
+	unsigned m_CurButton{ 0 };
 	std::vector<Button*> m_Buttons;
 
 	FMOD::Channel* m_pChannel2D{ nullptr };

@@ -273,7 +273,7 @@ bool gUseLight
 <
 	string UIName = "Use Light";
 	string UIWidget = "Bool";
-> = false;
+> = true;
 
 
 //Shadow

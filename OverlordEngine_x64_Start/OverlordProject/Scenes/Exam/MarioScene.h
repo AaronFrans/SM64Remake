@@ -34,18 +34,6 @@ protected:
 	void PostDraw() override;
 private:
 
-
-	enum InputIds
-	{
-		CharacterMoveLeft,
-		CharacterMoveRight,
-		CharacterMoveForward,
-		CharacterMoveBackward,
-		CharacterJump,
-		CharacterPunch,
-		PauseGame
-	};
-
 	void MakeMario(physx::PxMaterial* physicsMaterial);
 
 	void MakeBubbleEmitter(float x, float y, float z);
@@ -68,6 +56,10 @@ private:
 	void MakeSkybox();
 
 	void Reset();
+
+	void MakeCoins();
+	void MakeGoombas();
+	void MakeBubbles();
 
 	//Character
 	ThirdPersonCharacter* m_pMario{};
@@ -127,6 +119,7 @@ private:
 	std::vector<Button*> m_Buttons{};
 	PostBlur* m_pPostBlur{};
 	bool m_IsPaused{ false };
+	unsigned m_CurButton{ 0 };
 
 	float m_ShadowMapScale{ 0.3f };
 
@@ -136,4 +129,7 @@ private:
 
 
 	FMOD::Channel* m_pChannel2D{ nullptr };
+
+	SpriteComponent* m_pControlls{};
+	float m_ControllDisplayTimer{ 0 };
 };

@@ -1,7 +1,4 @@
-sprint
-long jump
-controller controls
-
+place coins goomba and bubbles
 
 Make video
 
@@ -15,5 +12,5 @@ Font:
  -> Have Arno there
 
 
+LOL game counter = 41 def - 30 maybe
 
- LOL game counter = 73

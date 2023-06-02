@@ -50,6 +50,7 @@
     <ClCompile Include="Scenes\Exam\DeathScene.cpp" />
     <ClCompile Include="Materials\Mario\FlowingWater.cpp" />
     <ClCompile Include="Scenes\Exam\VictoryScene.cpp" />
+    <ClCompile Include="Scenes\Exam\Inputs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />

@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "MarioScene.h"
+#include "Inputs.cpp"
+
 #include "Prefabs/ThirdPersonCharacter.h"
 
 #include "Materials/Mario/EntityMaterial_Skinned.h"
@@ -42,6 +44,12 @@ void MarioScene::RemoveHealth()
 void MarioScene::Initialize()
 {
 	m_SceneContext.settings.enableOnGUI = true;
+	m_SceneContext.settings.clearColor = { 0,0,0,1 };
+	m_SceneContext.settings.drawUserDebug = false;
+	m_SceneContext.settings.drawGrid = false;
+
+	m_SceneContext.pInput->ForceMouseToCenter(true);
+	m_SceneContext.settings.drawPhysXDebug = false;
 
 	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 
@@ -50,7 +58,7 @@ void MarioScene::Initialize()
 	m_pSlipperyPhysxMat = physX.createMaterial(0.0f, 0.0f, 0);
 
 	ShadowMapRenderer::Get()->SetFarPlane(100);
-	ShadowMapRenderer::Get()->SetNearPlane(-5);
+	ShadowMapRenderer::Get()->SetNearPlane(-100);
 
 	//Skybox
 	MakeSkybox();
@@ -61,12 +69,10 @@ void MarioScene::Initialize()
 	MakeUnderwater(m_pDefaultPhysxMat);
 
 	//Coins
-	MakeCoin(10, 10, 0, m_pDefaultPhysxMat);
-	MakeCoin(-10, 10, 0, m_pDefaultPhysxMat);
+	MakeCoins();
 
 	//Goombas
-	MakeGoomba(20, 10, 20, m_pDefaultPhysxMat);
-	MakeGoomba(0, 10, 0, m_pDefaultPhysxMat);
+	MakeGoombas();
 
 	//Level
 	MakeLevel();
@@ -81,30 +87,43 @@ void MarioScene::Initialize()
 
 
 	//Input
-	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
+	auto inputAction = InputAction(Inputs::CharacterMoveLeft, InputState::down, 'A');
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(CharacterMoveRight, InputState::down, 'D');
+	inputAction = InputAction(Inputs::CharacterMoveRight, InputState::down, 'D');
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(CharacterMoveForward, InputState::down, 'W');
+	inputAction = InputAction(Inputs::CharacterMoveForward, InputState::down, 'W');
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(CharacterMoveBackward, InputState::down, 'S');
+	inputAction = InputAction(Inputs::CharacterMoveBackward, InputState::down, 'S');
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
+	inputAction = InputAction(Inputs::CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(CharacterPunch, InputState::pressed, 'F', -1, XINPUT_GAMEPAD_A);
+	inputAction = InputAction(Inputs::CharacterPunch, InputState::pressed, 'F', -1, XINPUT_GAMEPAD_B);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(PauseGame, InputState::pressed, VK_ESCAPE, -1, XINPUT_GAMEPAD_A);
+	inputAction = InputAction(Inputs::CharacterSprint, InputState::down, VK_SHIFT, -1, XINPUT_GAMEPAD_LEFT_THUMB);
 	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(Inputs::PauseGame, InputState::pressed, VK_ESCAPE, -1, XINPUT_GAMEPAD_START);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(Inputs::Left, InputState::pressed, -1, -1, XINPUT_GAMEPAD_DPAD_LEFT);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(Inputs::Right, InputState::pressed, -1, -1, XINPUT_GAMEPAD_DPAD_RIGHT);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(Inputs::Press, InputState::pressed, -1, -1, XINPUT_GAMEPAD_A);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
 
 
 	//Bubbles
-	MakeBubbleEmitter(178.521f, -12.1922f, -118.9f);
+	MakeBubbles();
 
 	MakeUI();
 
@@ -120,6 +139,10 @@ void MarioScene::Initialize()
 	result = pFmod->playSound(pSound2D, nullptr, false, &m_pChannel2D);
 	m_pChannel2D->setPaused(true);
 	m_pChannel2D->setVolume(0.5f);
+
+
+	m_pControlls = AddChild(new GameObject)->AddComponent(new SpriteComponent(L"Textures/Mario/Controlls/Controlls.png"));
+	m_pControlls->GetTransform()->Translate(0, 0, 0.9f);
 
 }
 
@@ -157,10 +180,14 @@ void MarioScene::OnGUI()
 
 void MarioScene::OnSceneActivated()
 {
+	m_pControlls->SetActive(true);
+	m_ControllDisplayTimer = 0;
 	m_pChannel2D->setPosition(0, FMOD_TIMEUNIT_MS);
 	m_pChannel2D->setPaused(false);
 
 	m_NrOfLives = 3;
+	m_NrCoinsPickedUp = 0;
+
 
 	m_NrTotalCoins = 0;
 	for (auto& coin : m_Coins)
@@ -169,8 +196,7 @@ void MarioScene::OnSceneActivated()
 	}
 	m_Coins.clear();
 
-	MakeCoin(10, 10, 0, m_pDefaultPhysxMat);
-	MakeCoin(-10, 10, 0, m_pDefaultPhysxMat);
+	MakeCoins();
 }
 
 void MarioScene::OnSceneDeactivated()
@@ -180,6 +206,23 @@ void MarioScene::OnSceneDeactivated()
 
 void MarioScene::Update()
 {
+
+#ifdef _DEBUG
+	//std::cout << "Mario at: " << m_pMario->GetTransform()->GetWorldPosition().x <<
+	//	", " << m_pMario->GetTransform()->GetWorldPosition().y <<
+	//	", " << m_pMario->GetTransform()->GetWorldPosition().z << '\n';
+	std::cout << "Camera at: " << m_SceneContext.pCamera->GetTransform()->GetWorldPosition().x << "f" <<
+		", " << m_SceneContext.pCamera->GetTransform()->GetWorldPosition().y << "f" <<
+		", " << m_SceneContext.pCamera->GetTransform()->GetWorldPosition().z << "f" << '\n';
+#endif // _DEBUG
+
+	m_ControllDisplayTimer += m_SceneContext.pGameTime->GetElapsed();
+
+	if (m_ControllDisplayTimer < 1)
+		return;
+	else
+		m_pControlls->SetActive(false);
+
 
 	if (m_IsDead)
 	{
@@ -211,6 +254,32 @@ void MarioScene::Update()
 	else if (m_SceneContext.pInput->IsActionTriggered(PauseGame) && m_IsPaused)
 		Resume();
 
+	if (m_IsPaused)
+	{
+		if (m_SceneContext.pInput->IsActionTriggered(0))
+		{
+			m_Buttons[m_CurButton]->SetSelected(false);
+			++m_CurButton;
+			if (m_CurButton == m_Buttons.size())
+				m_CurButton = 0;
+			m_Buttons[m_CurButton]->SetSelected(true);
+		}
+		if (m_SceneContext.pInput->IsActionTriggered(1))
+		{
+			m_Buttons[m_CurButton]->SetSelected(false);
+			if (static_cast<int>(m_CurButton - 1) < 0)
+				m_CurButton = static_cast<unsigned>(m_Buttons.size() - 1);
+			else
+				--m_CurButton;
+
+			m_Buttons[m_CurButton]->SetSelected(true);
+		}
+		if (m_SceneContext.pInput->IsActionTriggered(2))
+		{
+			m_Buttons[m_CurButton]->DoOnClick();
+		}
+	}
+
 	auto pMarioPos = m_pMario->GetTransform()->GetWorldPosition();
 
 	m_SceneContext.pLights->GetDirectionalLight().position = { pMarioPos.x + m_LightOffset[0] , pMarioPos.y + m_LightOffset[1], pMarioPos.z + m_LightOffset[2], 0 };
@@ -233,12 +302,13 @@ void MarioScene::MakeMario(physx::PxMaterial* pPhysicsMaterial)
 	pMarioMat->SetOpacityTexture(L"Textures/Mario/Mario/MarioOpacity.png");
 
 	CharacterDesc characterDesc{ pPhysicsMaterial };
-	characterDesc.actionId_MoveForward = CharacterMoveForward;
-	characterDesc.actionId_MoveBackward = CharacterMoveBackward;
-	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
-	characterDesc.actionId_MoveRight = CharacterMoveRight;
-	characterDesc.actionId_Jump = CharacterJump;
-	characterDesc.actionId_Punch = CharacterPunch;
+	characterDesc.actionId_MoveForward = Inputs::CharacterMoveForward;
+	characterDesc.actionId_MoveBackward = Inputs::CharacterMoveBackward;
+	characterDesc.actionId_MoveLeft = Inputs::CharacterMoveLeft;
+	characterDesc.actionId_MoveRight = Inputs::CharacterMoveRight;
+	characterDesc.actionId_Jump = Inputs::CharacterJump;
+	characterDesc.actionId_Punch = Inputs::CharacterPunch;
+	characterDesc.actionId_Sprint = Inputs::CharacterSprint;
 
 	m_pMario = AddChild(new ThirdPersonCharacter(characterDesc, pPhysicsMaterial));
 
@@ -795,19 +865,15 @@ void MarioScene::MakeUnderwater(physx::PxMaterial* physicsMaterial)
 	pUnderwater->SetOnTriggerCallBack([&](GameObject*, GameObject* pOther, PxTriggerAction action) {
 
 
-		if (action == PxTriggerAction::ENTER && pOther->GetTag() == L"Mario")
+		if (action == PxTriggerAction::ENTER && pOther->GetTag() == L"Camera")
 		{
-			std::cout << "enter";
 			AddPostProcessingEffect(m_pPostUnderwater);
 		}
 
 
-		if (action == PxTriggerAction::LEAVE && pOther->GetTag() == L"Mario")
+		if (action == PxTriggerAction::LEAVE && pOther->GetTag() == L"Camera")
 		{
-
-			std::cout << "left";
 			RemovePostProcessingEffect(m_pPostUnderwater);
-
 		}
 
 		});
@@ -849,7 +915,7 @@ void MarioScene::MakePauseMenu()
 	m_pPostBlur = MaterialManager::Get()->CreateMaterial<PostBlur>();
 
 
-	auto pMainMenu = AddChild(new Button(L"Textures/Mario/Menu/ToMainMenu.png", [&]() {
+	auto pMainMenu = AddChild(new Button(L"Textures/Mario/Menu/ToMainMenu.png", L"Textures/Mario/Menu/ToMainMenuActive.png", [&]() {
 		Reset();
 		SceneManager::Get()->SetActiveGameScene(L"MainMenuScene");
 		}, "Resources/Sounds/Mario/ToMainMenu.wav"));
@@ -860,14 +926,14 @@ void MarioScene::MakePauseMenu()
 	m_PauseMenuSprites.back()->SetActive(false);
 
 
-	auto pQuit = AddChild(new Button(L"Textures/Mario/Menu/Quit.png", [&]() { OverlordGame::Quit(); }, "Resources/Sounds/Mario/Exit.wav"));
+	auto pQuit = AddChild(new Button(L"Textures/Mario/Menu/Quit.png", L"Textures/Mario/Menu/QuitActive.png", [&]() { OverlordGame::Quit(); }, "Resources/Sounds/Mario/Exit.wav"));
 	pQuit->GetTransform()->Translate(820, 550, 0.5f);
 	m_Buttons.emplace_back(pQuit);
 
 	m_PauseMenuSprites.emplace_back(pQuit->GetComponent<SpriteComponent>());
 	m_PauseMenuSprites.back()->SetActive(false);
 
-	auto pRestart = AddChild(new Button(L"Textures/Mario/Menu/Restart.png", [&]() { Reset(); }, "Resources/Sounds/Mario/Start-Restart.wav"));
+	auto pRestart = AddChild(new Button(L"Textures/Mario/Menu/Restart.png", L"Textures/Mario/Menu/RestartActive.png", [&]() { Reset(); }, "Resources/Sounds/Mario/Start-Restart.wav"));
 	pRestart->GetTransform()->Translate(550, 230, 0.5f);
 	m_Buttons.emplace_back(pRestart);
 
@@ -879,10 +945,12 @@ void MarioScene::MakePauseMenu()
 void MarioScene::Pause()
 {
 	AddPostProcessingEffect(m_pPostBlur);
-	for (auto& sprite : m_PauseMenuSprites)
+	m_CurButton = 0;
+	for (auto& button : m_Buttons)
 	{
-		sprite->SetActive(true);
+		button->Activate();
 	}
+	m_Buttons[m_CurButton]->SetSelected(true);
 	m_SceneContext.pGameTime->Stop();
 	m_IsPaused = true;
 }
@@ -890,9 +958,9 @@ void MarioScene::Pause()
 void MarioScene::Resume()
 {
 	RemovePostProcessingEffect(m_pPostBlur);
-	for (auto& sprite : m_PauseMenuSprites)
+	for (auto& button : m_Buttons)
 	{
-		sprite->SetActive(false);
+		button->Deactivate();
 	}
 	m_IsPaused = false;
 
@@ -920,7 +988,6 @@ void MarioScene::Reset()
 		goomba->Reset();
 	}
 
-	m_NrCoinsPickedUp = 0;
 
 	for (auto& heart : m_pHearts)
 	{
@@ -933,5 +1000,49 @@ void MarioScene::Reset()
 
 	Resume();
 
+}
+
+void MarioScene::MakeCoins()
+{
+	MakeCoin(0.247314f, 2.855949f, -7.74701f, m_pDefaultPhysxMat);
+	MakeCoin(149.275f, -6.60035f, -85.2508f, m_pDefaultPhysxMat);
+	MakeCoin(-122.595f, -39.6861f, -66.3375f, m_pDefaultPhysxMat);
+	MakeCoin(47.5955f, -9.1152f, -139.091f, m_pDefaultPhysxMat);
+	MakeCoin(7.43575f, -35.258f, -258.486f, m_pDefaultPhysxMat);
+}
+
+void MarioScene::MakeGoombas()
+{
+	MakeGoomba(151.087f, -3.44418f, -79.8373f, m_pDefaultPhysxMat);
+	MakeGoomba(138.239f, -5.43421f, -85.2993f, m_pDefaultPhysxMat);
+	MakeGoomba(44.2151f, -6.4628f, -135.365f, m_pDefaultPhysxMat);
+	MakeGoomba(-76.8296f, -21.4486f, -192.854f, m_pDefaultPhysxMat);
+	MakeGoomba(-46.2544f, -24.3595f, -237.877f, m_pDefaultPhysxMat);
+	MakeGoomba(-4.4778f, -30.2403f, -257.665f, m_pDefaultPhysxMat);
+}
+
+void MarioScene::MakeBubbles()
+{
+	//Waterfall
+	MakeBubbleEmitter(167.285f, -29.8695f, -118.827f);
+	MakeBubbleEmitter(166.264f, -32.2084f, -130.228f);
+	MakeBubbleEmitter(167.547f, -34.3052f, -140.876f);
+	MakeBubbleEmitter(175.725f, -29.4026f, -108.575f);
+	MakeBubbleEmitter(166.628f, -33.4221f, -132.119f);
+	MakeBubbleEmitter(167.604f, -30.6923f, -113.641f);
+	MakeBubbleEmitter(167.223f, -33.0672f, -125.368f);
+	MakeBubbleEmitter(165.928f, -33.259f, -127.836f);
+	MakeBubbleEmitter(166.367f, -35.5401f, -138.801f);
+	MakeBubbleEmitter(166.517f, -35.8113f, -144.458f);
+	MakeBubbleEmitter(166.843f, -35.004f, -141.548f);
+	MakeBubbleEmitter(168.335f, -33.9655f, -125.831f);
+	MakeBubbleEmitter(168.891f, -33.2353f, -118.82f);
+
+
+	//UnderWater
+	MakeBubbleEmitter(-115.053f, -39.1606f, -57.6249f);
+	MakeBubbleEmitter(-123.415f, -39.7363f, -60.9125f);
+	MakeBubbleEmitter(16.579f, -36.8913f, -139.643f);
+	MakeBubbleEmitter(24.3567f, -28.9532f, -94.3045f);
 }
 
